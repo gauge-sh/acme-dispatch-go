@@ -1,0 +1,19 @@
+# binaries
+/bin/
+*.exe
+*.test
+
+# local databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# coverage and profiles
+*.out
+*.prof
+
+# editor noise
+.idea/
+.vscode/
+*.swp
