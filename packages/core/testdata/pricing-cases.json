@@ -1,0 +1,111 @@
+{
+  "$comment": "Conformance fixtures for invoice pricing. All money in integer cents. Hours are derived from appointment start/end. Weekend is determined by the day of week of the appointment start in UTC (Saturday or Sunday). Rounding: round half away from zero to whole cents after each line computation; the weekend surcharge applies to the already-rounded labor line; the urgent multiplier applies last to the rounded invoice total.",
+  "labor_markup": 1.6,
+  "weekend_surcharge": 0.15,
+  "urgent_surcharge": 0.1,
+  "cases": [
+    {
+      "id": 1,
+      "name": "single weekday appointment",
+      "priority": "normal",
+      "appointments": [
+        {
+          "start": "2025-03-12T09:00:00Z",
+          "end": "2025-03-12T11:00:00Z",
+          "hours": 2.0,
+          "technician_hourly_cost_cents": 5000,
+          "weekend": false
+        }
+      ],
+      "parts": [],
+      "expected": { "labor_cents": 16000, "parts_cents": 0, "total_cents": 16000 }
+    },
+    {
+      "id": 2,
+      "name": "saturday appointment takes the weekend surcharge",
+      "priority": "normal",
+      "appointments": [
+        {
+          "start": "2025-03-15T09:00:00Z",
+          "end": "2025-03-15T11:00:00Z",
+          "hours": 2.0,
+          "technician_hourly_cost_cents": 5000,
+          "weekend": true
+        }
+      ],
+      "parts": [],
+      "expected": { "labor_cents": 18400, "parts_cents": 0, "total_cents": 18400 }
+    },
+    {
+      "id": 3,
+      "name": "labor plus parts",
+      "priority": "normal",
+      "appointments": [
+        {
+          "start": "2025-03-12T13:00:00Z",
+          "end": "2025-03-12T14:30:00Z",
+          "hours": 1.5,
+          "technician_hourly_cost_cents": 8000,
+          "weekend": false
+        }
+      ],
+      "parts": [{ "quantity": 3, "unit_price_cents": 1299 }],
+      "expected": { "labor_cents": 19200, "parts_cents": 3897, "total_cents": 23097 }
+    },
+    {
+      "id": 4,
+      "name": "urgent priority multiplies the rounded total",
+      "priority": "urgent",
+      "appointments": [
+        {
+          "start": "2025-03-12T13:00:00Z",
+          "end": "2025-03-12T14:30:00Z",
+          "hours": 1.5,
+          "technician_hourly_cost_cents": 8000,
+          "weekend": false
+        }
+      ],
+      "parts": [{ "quantity": 3, "unit_price_cents": 1299 }],
+      "expected": { "labor_cents": 19200, "parts_cents": 3897, "total_cents": 25407 }
+    },
+    {
+      "id": 5,
+      "name": "mixed weekday and sunday appointments",
+      "priority": "normal",
+      "appointments": [
+        {
+          "start": "2025-03-12T09:00:00Z",
+          "end": "2025-03-12T11:00:00Z",
+          "hours": 2.0,
+          "technician_hourly_cost_cents": 5000,
+          "weekend": false
+        },
+        {
+          "start": "2025-03-16T09:00:00Z",
+          "end": "2025-03-16T10:00:00Z",
+          "hours": 1.0,
+          "technician_hourly_cost_cents": 5000,
+          "weekend": true
+        }
+      ],
+      "parts": [],
+      "expected": { "labor_cents": 25200, "parts_cents": 0, "total_cents": 25200 }
+    },
+    {
+      "id": 6,
+      "name": "half hour at an odd rate rounds down",
+      "priority": "normal",
+      "appointments": [
+        {
+          "start": "2025-03-12T08:00:00Z",
+          "end": "2025-03-12T08:30:00Z",
+          "hours": 0.5,
+          "technician_hourly_cost_cents": 3333,
+          "weekend": false
+        }
+      ],
+      "parts": [],
+      "expected": { "labor_cents": 2666, "parts_cents": 0, "total_cents": 2666 }
+    }
+  ]
+}
