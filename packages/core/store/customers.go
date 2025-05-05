@@ -53,6 +53,13 @@ func (s *Store) UpdateCustomer(c *core.Customer) error {
 }
 
 func (s *Store) DeleteCustomer(id int64) error {
+	var jobs int
+	if err := s.get(&jobs, `SELECT COUNT(*) FROM jobs WHERE customer_id = ?`, id); err != nil {
+		return err
+	}
+	if jobs > 0 {
+		return core.Invalid("customer has jobs and cannot be deleted")
+	}
 	res, err := s.exec(`DELETE FROM customers WHERE id = ?`, id)
 	if err != nil {
 		return err
