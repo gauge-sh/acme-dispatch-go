@@ -13,9 +13,9 @@ func (s *Store) CreateCustomer(c *core.Customer) error {
 		return err
 	}
 	touch(&c.CreatedAt, &c.UpdatedAt)
-	res, err := s.exec(`INSERT INTO customers (name, contact_email, phone, service_address, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		c.Name, c.ContactEmail, c.Phone, c.ServiceAddress, c.CreatedAt, c.UpdatedAt)
+	res, err := s.exec(`INSERT INTO customers (name, contact_email, phone, service_address, notes, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		c.Name, c.ContactEmail, c.Phone, c.ServiceAddress, c.Notes, c.CreatedAt, c.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -40,9 +40,9 @@ func (s *Store) UpdateCustomer(c *core.Customer) error {
 		return err
 	}
 	c.UpdatedAt = core.Now()
-	res, err := s.exec(`UPDATE customers SET name = ?, contact_email = ?, phone = ?, service_address = ?, updated_at = ?
+	res, err := s.exec(`UPDATE customers SET name = ?, contact_email = ?, phone = ?, service_address = ?, notes = ?, updated_at = ?
 		WHERE id = ?`,
-		c.Name, c.ContactEmail, c.Phone, c.ServiceAddress, c.UpdatedAt, c.ID)
+		c.Name, c.ContactEmail, c.Phone, c.ServiceAddress, c.Notes, c.UpdatedAt, c.ID)
 	if err != nil {
 		return err
 	}
