@@ -18,7 +18,8 @@ func (s *Store) AddJobPart(jobID, partID, quantity int64) (*core.JobPart, error)
 		if err := core.CheckAcceptsParts(job.Status); err != nil {
 			return err
 		}
-		if _, err := tx.PartByID(partID); err != nil {
+		part, err := tx.PartByID(partID)
+		if err != nil {
 			return err
 		}
 		level, err := tx.StockLevelForPart(partID)
@@ -34,9 +35,9 @@ func (s *Store) AddJobPart(jobID, partID, quantity int64) (*core.JobPart, error)
 			return err
 		}
 		now := core.Now()
-		res, err := tx.exec(`INSERT INTO job_parts (job_id, part_id, quantity, created_at, updated_at)
-			VALUES (?, ?, ?, ?, ?)`,
-			jobID, partID, quantity, now, now)
+		res, err := tx.exec(`INSERT INTO job_parts (job_id, part_id, quantity, unit_price_cents, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?)`,
+			jobID, partID, quantity, part.UnitPriceCents, now, now)
 		if err != nil {
 			return err
 		}
@@ -45,12 +46,13 @@ func (s *Store) AddJobPart(jobID, partID, quantity int64) (*core.JobPart, error)
 			return err
 		}
 		jp = &core.JobPart{
-			ID:        id,
-			JobID:     jobID,
-			PartID:    partID,
-			Quantity:  quantity,
-			CreatedAt: now,
-			UpdatedAt: now,
+			ID:             id,
+			JobID:          jobID,
+			PartID:         partID,
+			Quantity:       quantity,
+			UnitPriceCents: part.UnitPriceCents,
+			CreatedAt:      now,
+			UpdatedAt:      now,
 		}
 		return nil
 	})
