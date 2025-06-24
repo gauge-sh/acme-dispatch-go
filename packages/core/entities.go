@@ -152,10 +152,10 @@ type InvoiceRecord struct {
 }
 
 type LineItem struct {
-	Kind        LineKind `json:"kind"`
-	Description string   `json:"description"`
-	Quantity    float64  `json:"quantity"`
-	UnitCents   int64    `json:"unit_cents"`
-	AmountCents int64    `json:"amount_cents"`
-	Weekend     bool     `json:"weekend"`
+	Kind        LineKind `db:"kind" json:"kind"`
+	Description string   `db:"description" json:"description"`
+	Quantity    float64  `db:"quantity" json:"quantity"`
+	UnitCents   int64    `db:"unit_cents" json:"unit_cents"`
+	AmountCents int64    `db:"amount_cents" json:"amount_cents"`
+	Weekend     bool     `db:"weekend" json:"weekend"`
 }
