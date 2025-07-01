@@ -1,11 +1,14 @@
 package store
 
 import (
+	"strings"
+
 	"github.com/acme-dispatch/dispatch/core"
 )
 
 type TechnicianFilter struct {
-	Skill string
+	Skill  string
+	Active *bool
 }
 
 func (s *Store) CreateTechnician(t *core.Technician) error {
@@ -13,9 +16,9 @@ func (s *Store) CreateTechnician(t *core.Technician) error {
 		return err
 	}
 	touch(&t.CreatedAt, &t.UpdatedAt)
-	res, err := s.exec(`INSERT INTO technicians (name, phone, skill_tags, hourly_cost_cents, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		t.Name, t.Phone, t.SkillTags, t.HourlyCostCents, t.CreatedAt, t.UpdatedAt)
+	res, err := s.exec(`INSERT INTO technicians (name, phone, skill_tags, hourly_cost_cents, is_active, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		t.Name, t.Phone, t.SkillTags, t.HourlyCostCents, t.IsActive, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -40,9 +43,9 @@ func (s *Store) UpdateTechnician(t *core.Technician) error {
 		return err
 	}
 	t.UpdatedAt = core.Now()
-	res, err := s.exec(`UPDATE technicians SET name = ?, phone = ?, skill_tags = ?, hourly_cost_cents = ?, updated_at = ?
+	res, err := s.exec(`UPDATE technicians SET name = ?, phone = ?, skill_tags = ?, hourly_cost_cents = ?, is_active = ?, updated_at = ?
 		WHERE id = ?`,
-		t.Name, t.Phone, t.SkillTags, t.HourlyCostCents, t.UpdatedAt, t.ID)
+		t.Name, t.Phone, t.SkillTags, t.HourlyCostCents, t.IsActive, t.UpdatedAt, t.ID)
 	if err != nil {
 		return err
 	}
@@ -71,11 +74,19 @@ func (s *Store) DeleteTechnician(id int64) error {
 }
 
 func (s *Store) ListTechnicians(f TechnicianFilter, p Page) ([]core.Technician, int, error) {
-	where := ""
+	var conds []string
 	args := []any{}
 	if f.Skill != "" {
-		where = ` WHERE EXISTS (SELECT 1 FROM json_each(technicians.skill_tags) WHERE json_each.value = ?)`
+		conds = append(conds, `EXISTS (SELECT 1 FROM json_each(technicians.skill_tags) WHERE json_each.value = ?)`)
 		args = append(args, f.Skill)
+	}
+	if f.Active != nil {
+		conds = append(conds, `is_active = ?`)
+		args = append(args, *f.Active)
+	}
+	where := ""
+	if len(conds) > 0 {
+		where = " WHERE " + strings.Join(conds, " AND ")
 	}
 	var total int
 	if err := s.get(&total, `SELECT COUNT(*) FROM technicians`+where, args...); err != nil {

@@ -30,15 +30,19 @@ func (s *Store) checkTechnicianConflict(technicianID, selfID int64, start, end c
 	return nil
 }
 
-func (s *Store) validateAppointment(a *core.Appointment, forJob *core.Job) error {
+func (s *Store) validateAppointment(a *core.Appointment, forJob *core.Job, requireActiveTech bool) error {
 	if err := core.CheckWindow(a.ScheduledStart.Time, a.ScheduledEnd.Time); err != nil {
 		return err
 	}
 	if err := core.ValidateAppointmentNotes(a.CompletionNotes); err != nil {
 		return err
 	}
-	if _, err := s.TechnicianByID(a.TechnicianID); err != nil {
+	tech, err := s.TechnicianByID(a.TechnicianID)
+	if err != nil {
 		return err
+	}
+	if requireActiveTech && !tech.IsActive {
+		return core.Invalid("technician is not active")
 	}
 	if forJob != nil {
 		if err := core.CheckAcceptsAppointments(forJob.Status); err != nil {
@@ -54,7 +58,7 @@ func (s *Store) CreateAppointment(a *core.Appointment) error {
 		if err != nil {
 			return err
 		}
-		if err := tx.validateAppointment(a, job); err != nil {
+		if err := tx.validateAppointment(a, job, true); err != nil {
 			return err
 		}
 		touch(&a.CreatedAt, &a.UpdatedAt)
@@ -95,7 +99,9 @@ func (s *Store) UpdateAppointment(a *core.Appointment) error {
 				return err
 			}
 		}
-		if err := tx.validateAppointment(a, gate); err != nil {
+		// An inactive technician only blocks a new assignment; existing
+		// appointments still take reschedules and notes.
+		if err := tx.validateAppointment(a, gate, a.TechnicianID != current.TechnicianID); err != nil {
 			return err
 		}
 		a.UpdatedAt = core.Now()

@@ -1,6 +1,7 @@
 package store
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/acme-dispatch/dispatch/core"
@@ -54,5 +55,42 @@ func TestTechnicianSkillFilter(t *testing.T) {
 	_, total, _ = s.ListTechnicians(TechnicianFilter{Skill: "plumb"}, Page{})
 	if total != 0 {
 		t.Fatalf("partial tag matched: total=%d", total)
+	}
+}
+
+func TestInactiveTechnicianRules(t *testing.T) {
+	s := testStore(t)
+	c := seedCustomer(t, s)
+	job := seedJob(t, s, c.ID, "Fix furnace")
+	dana := seedTech(t, s, "Dana")
+	existing := seedAppointment(t, s, job.ID, dana.ID, ts(2, 9), ts(2, 11))
+
+	dana.IsActive = false
+	if err := s.UpdateTechnician(dana); err != nil {
+		t.Fatal(err)
+	}
+
+	a := core.Appointment{JobID: job.ID, TechnicianID: dana.ID, ScheduledStart: ts(3, 9), ScheduledEnd: ts(3, 10)}
+	err := s.CreateAppointment(&a)
+	var derr *core.Error
+	if !errors.As(err, &derr) || derr.Message != "technician is not active" {
+		t.Fatalf("inactive assignment: %v", err)
+	}
+
+	// Existing appointments still take notes and reschedules.
+	existing.CompletionNotes = str("wrapped up before leaving")
+	if err := s.UpdateAppointment(existing); err != nil {
+		t.Fatalf("notes on inactive tech: %v", err)
+	}
+
+	active := true
+	_, total, _ := s.ListTechnicians(TechnicianFilter{Active: &active}, Page{})
+	if total != 0 {
+		t.Fatalf("active filter: %d", total)
+	}
+	inactive := false
+	_, total, _ = s.ListTechnicians(TechnicianFilter{Active: &inactive}, Page{})
+	if total != 1 {
+		t.Fatalf("inactive filter: %d", total)
 	}
 }
