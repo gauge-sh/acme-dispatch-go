@@ -74,6 +74,17 @@ func noRows(err error) bool {
 	return errors.Is(err, sql.ErrNoRows)
 }
 
+// fieldMustExist rewrites a not-found for a referenced entity into a
+// validation error on the referencing field: a missing customer_id in a POST
+// body is the caller's input being wrong, not a missing resource.
+func fieldMustExist(err error, field string) error {
+	var derr *core.Error
+	if errors.As(err, &derr) && derr.Code == core.CodeNotFound {
+		return core.InvalidFields(field+" must exist", map[string]string{field: "must exist"})
+	}
+	return err
+}
+
 // Page is a validated pagination window; the API and web layers construct it
 // from query parameters.
 type Page struct {

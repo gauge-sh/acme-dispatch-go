@@ -23,7 +23,7 @@ func (s *Store) CreateJob(j *core.Job) error {
 		return err
 	}
 	if _, err := s.CustomerByID(j.CustomerID); err != nil {
-		return err
+		return fieldMustExist(err, "customer_id")
 	}
 	touch(&j.CreatedAt, &j.UpdatedAt)
 	res, err := s.exec(`INSERT INTO jobs (customer_id, title, description, priority, status, created_at, updated_at)
@@ -55,7 +55,7 @@ func (s *Store) UpdateJob(j *core.Job) error {
 		return err
 	}
 	if _, err := s.CustomerByID(j.CustomerID); err != nil {
-		return err
+		return fieldMustExist(err, "customer_id")
 	}
 	j.UpdatedAt = core.Now()
 	res, err := s.exec(`UPDATE jobs SET customer_id = ?, title = ?, description = ?, priority = ?, updated_at = ?

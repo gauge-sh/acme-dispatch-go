@@ -12,7 +12,7 @@ type StockFilter struct {
 // screens and the API want.
 type StockWithPart struct {
 	core.StockLevel
-	Part core.Part
+	Part core.Part `json:"part"`
 }
 
 // StockAdjustment is one entry in the audit trail: every change to a level,

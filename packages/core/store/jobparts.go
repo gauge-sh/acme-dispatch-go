@@ -20,7 +20,7 @@ func (s *Store) AddJobPart(jobID, partID, quantity int64) (*core.JobPart, error)
 		}
 		part, err := tx.PartByID(partID)
 		if err != nil {
-			return err
+			return fieldMustExist(err, "part_id")
 		}
 		level, err := tx.StockLevelForPart(partID)
 		if err != nil {

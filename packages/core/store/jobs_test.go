@@ -45,8 +45,10 @@ func TestCreateJobUnknownCustomer(t *testing.T) {
 	j := core.Job{CustomerID: 999, Title: "Fix furnace"}
 	err := s.CreateJob(&j)
 	var derr *core.Error
-	if !errors.As(err, &derr) || derr.Code != core.CodeNotFound {
-		t.Fatalf("expected not_found, got %v", err)
+	// A dangling reference in the body is the caller's input being wrong,
+	// not a missing resource: validation_failed, not not_found.
+	if !errors.As(err, &derr) || derr.Code != core.CodeValidationFailed || derr.Fields["customer_id"] == "" {
+		t.Fatalf("expected validation_failed on customer_id, got %v", err)
 	}
 }
 

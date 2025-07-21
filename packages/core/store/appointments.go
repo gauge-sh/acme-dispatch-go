@@ -39,7 +39,7 @@ func (s *Store) validateAppointment(a *core.Appointment, forJob *core.Job, requi
 	}
 	tech, err := s.TechnicianByID(a.TechnicianID)
 	if err != nil {
-		return err
+		return fieldMustExist(err, "technician_id")
 	}
 	if requireActiveTech && !tech.IsActive {
 		return core.Invalid("technician is not active")
@@ -56,7 +56,7 @@ func (s *Store) CreateAppointment(a *core.Appointment) error {
 	return s.InTx(func(tx *Store) error {
 		job, err := tx.JobByID(a.JobID)
 		if err != nil {
-			return err
+			return fieldMustExist(err, "job_id")
 		}
 		if err := tx.validateAppointment(a, job, true); err != nil {
 			return err
@@ -96,7 +96,7 @@ func (s *Store) UpdateAppointment(a *core.Appointment) error {
 		var gate *core.Job
 		if a.JobID != current.JobID {
 			if gate, err = tx.JobByID(a.JobID); err != nil {
-				return err
+				return fieldMustExist(err, "job_id")
 			}
 		}
 		// An inactive technician only blocks a new assignment; existing
