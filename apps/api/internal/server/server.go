@@ -28,6 +28,15 @@ func New(st *store.Store) http.Handler {
 	mux.HandleFunc("PATCH /api/v1/technicians/{id}", s.patchTechnician)
 	mux.HandleFunc("DELETE /api/v1/technicians/{id}", s.requireAdmin(s.deleteTechnician))
 
+	mux.HandleFunc("GET /api/v1/parts", s.listParts)
+	mux.HandleFunc("POST /api/v1/parts", s.createPart)
+	mux.HandleFunc("GET /api/v1/parts/{id}", s.getPart)
+	mux.HandleFunc("PATCH /api/v1/parts/{id}", s.patchPart)
+	mux.HandleFunc("DELETE /api/v1/parts/{id}", s.requireAdmin(s.deletePart))
+
+	mux.HandleFunc("GET /api/v1/stock-levels", s.listStockLevels)
+	mux.HandleFunc("POST /api/v1/stock-levels/{part_id}/adjust", s.adjustStock)
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		writeErrorCode(w, http.StatusNotFound, "not_found", "not found")
 	})
