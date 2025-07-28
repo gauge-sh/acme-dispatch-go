@@ -22,6 +22,12 @@ func New(st *store.Store) http.Handler {
 	mux.HandleFunc("PATCH /api/v1/customers/{id}", s.patchCustomer)
 	mux.HandleFunc("DELETE /api/v1/customers/{id}", s.deleteCustomer)
 
+	mux.HandleFunc("GET /api/v1/technicians", s.listTechnicians)
+	mux.HandleFunc("POST /api/v1/technicians", s.createTechnician)
+	mux.HandleFunc("GET /api/v1/technicians/{id}", s.getTechnician)
+	mux.HandleFunc("PATCH /api/v1/technicians/{id}", s.patchTechnician)
+	mux.HandleFunc("DELETE /api/v1/technicians/{id}", s.requireAdmin(s.deleteTechnician))
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		writeErrorCode(w, http.StatusNotFound, "not_found", "not found")
 	})
