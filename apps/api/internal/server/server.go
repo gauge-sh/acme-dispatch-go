@@ -44,6 +44,12 @@ func New(st *store.Store) http.Handler {
 	mux.HandleFunc("POST /api/v1/jobs/{id}/invoice", s.invoiceJob)
 	mux.HandleFunc("DELETE /api/v1/job-parts/{id}", s.removeJobPart)
 
+	mux.HandleFunc("GET /api/v1/appointments", s.listAppointments)
+	mux.HandleFunc("POST /api/v1/appointments", s.createAppointment)
+	mux.HandleFunc("GET /api/v1/appointments/{id}", s.getAppointment)
+	mux.HandleFunc("PATCH /api/v1/appointments/{id}", s.patchAppointment)
+	mux.HandleFunc("DELETE /api/v1/appointments/{id}", s.deleteAppointment)
+
 	mux.HandleFunc("GET /api/v1/stock-levels", s.listStockLevels)
 	mux.HandleFunc("POST /api/v1/stock-levels/{part_id}/adjust", s.adjustStock)
 
