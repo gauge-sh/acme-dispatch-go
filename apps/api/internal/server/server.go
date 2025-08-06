@@ -34,6 +34,12 @@ func New(st *store.Store) http.Handler {
 	mux.HandleFunc("PATCH /api/v1/parts/{id}", s.patchPart)
 	mux.HandleFunc("DELETE /api/v1/parts/{id}", s.requireAdmin(s.deletePart))
 
+	mux.HandleFunc("GET /api/v1/users", s.requireAdmin(s.listUsers))
+	mux.HandleFunc("POST /api/v1/users", s.requireAdmin(s.createUser))
+	mux.HandleFunc("GET /api/v1/users/{id}", s.requireAdmin(s.getUser))
+	mux.HandleFunc("PATCH /api/v1/users/{id}", s.requireAdmin(s.patchUser))
+	mux.HandleFunc("DELETE /api/v1/users/{id}", s.requireAdmin(s.deleteUser))
+
 	mux.HandleFunc("GET /api/v1/jobs", s.listJobs)
 	mux.HandleFunc("POST /api/v1/jobs", s.createJob)
 	mux.HandleFunc("GET /api/v1/jobs/{id}", s.getJob)
