@@ -53,6 +53,9 @@ func New(st *store.Store) http.Handler {
 	mux.HandleFunc("GET /api/v1/stock-levels", s.listStockLevels)
 	mux.HandleFunc("POST /api/v1/stock-levels/{part_id}/adjust", s.adjustStock)
 
+	mux.HandleFunc("GET /api/v1/invoice-records", s.listInvoiceRecords)
+	mux.HandleFunc("GET /api/v1/invoice-records/{id}", s.getInvoiceRecord)
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		writeErrorCode(w, http.StatusNotFound, "not_found", "not found")
 	})
