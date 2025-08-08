@@ -1,0 +1,16 @@
+{{define "title"}}Sign in — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="login-card">
+  <h1>Acme Dispatch</h1>
+  {{with .Data.Error}}<div class="error-banner">{{.}}</div>{{end}}
+  <form method="post" action="/login">
+    <label>Email
+      <input type="email" name="email" value="{{.Data.Email}}" autofocus required>
+    </label>
+    <label>Password
+      <input type="password" name="password" required>
+    </label>
+    <button type="submit">Sign in</button>
+  </form>
+</div>
+{{end}}

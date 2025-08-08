@@ -1,0 +1,27 @@
+{{define "title"}}Dashboard — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>Dashboard</h1>
+  <a class="button" href="/jobs/new">New job</a>
+</div>
+<div class="board">
+  {{range .Data.Columns}}
+  <div class="column">
+    <h2>{{title (printf "%s" .Status)}} <span class="count">{{.Count}}</span></h2>
+    {{if .Jobs}}
+    <ul>
+      {{range .Jobs}}
+      <li>
+        <a href="/jobs/{{.ID}}">{{.Title}}</a><br>
+        <span class="count">{{.CustomerName}}</span>
+        {{if eq (printf "%s" .Priority) "urgent"}}<span class="badge urgent">urgent</span>{{end}}
+      </li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="count">Nothing here.</p>
+    {{end}}
+  </div>
+  {{end}}
+</div>
+{{end}}
