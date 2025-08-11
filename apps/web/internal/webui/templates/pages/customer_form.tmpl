@@ -1,0 +1,31 @@
+{{define "title"}}{{if .Data.Customer.ID}}Edit customer{{else}}New customer{{end}} — Acme Dispatch{{end}}
+{{define "content"}}
+<h1>{{if .Data.Customer.ID}}Edit {{.Data.Customer.Name}}{{else}}New customer{{end}}</h1>
+{{with .Data.Error}}<div class="error-banner">{{.}}</div>{{end}}
+<form class="stacked" method="post" action="{{if .Data.Customer.ID}}/customers/{{.Data.Customer.ID}}{{else}}/customers{{end}}">
+  <label>Name
+    <input name="name" value="{{.Data.Customer.Name}}">
+    {{with index .Data.Fields "name"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Service address
+    <input name="service_address" value="{{.Data.Customer.ServiceAddress}}">
+    {{with index .Data.Fields "service_address"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Contact email <span class="hint">optional</span>
+    <input name="contact_email" value="{{deref .Data.Customer.ContactEmail}}">
+    {{with index .Data.Fields "contact_email"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Phone <span class="hint">optional</span>
+    <input name="phone" value="{{deref .Data.Customer.Phone}}">
+    {{with index .Data.Fields "phone"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Notes <span class="hint">optional</span>
+    <textarea name="notes" rows="4">{{deref .Data.Customer.Notes}}</textarea>
+    {{with index .Data.Fields "notes"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <div class="actions">
+    <button type="submit">Save</button>
+    <a class="button subtle" href="{{if .Data.Customer.ID}}/customers/{{.Data.Customer.ID}}{{else}}/customers{{end}}">Cancel</a>
+  </div>
+</form>
+{{end}}

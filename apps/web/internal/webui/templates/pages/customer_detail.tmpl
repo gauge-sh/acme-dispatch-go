@@ -1,0 +1,38 @@
+{{define "title"}}{{.Data.Customer.Name}} — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>{{.Data.Customer.Name}}</h1>
+  <div class="actions">
+    <a class="button subtle" href="/customers/{{.Data.Customer.ID}}/edit">Edit</a>
+    <form class="inline-form" method="post" action="/customers/{{.Data.Customer.ID}}/delete">
+      <button class="danger" type="submit">Delete</button>
+    </form>
+  </div>
+</div>
+<div class="detail-grid">
+  <div class="cell"><div class="label">Service address</div>{{.Data.Customer.ServiceAddress}}</div>
+  <div class="cell"><div class="label">Contact email</div>{{with .Data.Customer.ContactEmail}}{{.}}{{else}}—{{end}}</div>
+  <div class="cell"><div class="label">Phone</div>{{with .Data.Customer.Phone}}{{.}}{{else}}—{{end}}</div>
+  <div class="cell"><div class="label">Customer since</div>{{date .Data.Customer.CreatedAt}}</div>
+</div>
+{{with .Data.Customer.Notes}}
+<h2>Notes</h2>
+<p class="notes">{{.}}</p>
+{{end}}
+<h2>Jobs</h2>
+{{if .Data.Jobs}}
+<table>
+  <tr><th>Title</th><th>Status</th><th>Priority</th><th>Opened</th></tr>
+  {{range .Data.Jobs}}
+  <tr>
+    <td><a href="/jobs/{{.ID}}">{{.Title}}</a></td>
+    <td><span class="badge {{.Status}}">{{title (printf "%s" .Status)}}</span></td>
+    <td><span class="badge {{.Priority}}">{{.Priority}}</span></td>
+    <td>{{date .CreatedAt}}</td>
+  </tr>
+  {{end}}
+</table>
+{{else}}
+<div class="empty">No jobs for this customer yet.</div>
+{{end}}
+{{end}}

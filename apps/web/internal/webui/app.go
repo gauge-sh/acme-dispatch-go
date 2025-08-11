@@ -31,5 +31,13 @@ func New(st *store.Store, sessionSecret []byte) http.Handler {
 
 	mux.HandleFunc("GET /{$}", app.auth(app.dashboard))
 
+	mux.HandleFunc("GET /customers", app.auth(app.customerList))
+	mux.HandleFunc("GET /customers/new", app.auth(app.customerNew))
+	mux.HandleFunc("POST /customers", app.auth(app.customerCreate))
+	mux.HandleFunc("GET /customers/{id}", app.auth(app.customerDetail))
+	mux.HandleFunc("GET /customers/{id}/edit", app.auth(app.customerEdit))
+	mux.HandleFunc("POST /customers/{id}", app.auth(app.customerUpdate))
+	mux.HandleFunc("POST /customers/{id}/delete", app.auth(app.customerDelete))
+
 	return mux
 }
