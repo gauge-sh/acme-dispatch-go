@@ -1,0 +1,31 @@
+{{define "title"}}{{if .Data.Technician.ID}}Edit technician{{else}}New technician{{end}} — Acme Dispatch{{end}}
+{{define "content"}}
+<h1>{{if .Data.Technician.ID}}Edit {{.Data.Technician.Name}}{{else}}New technician{{end}}</h1>
+{{with .Data.Error}}<div class="error-banner">{{.}}</div>{{end}}
+<form class="stacked" method="post" action="{{if .Data.Technician.ID}}/technicians/{{.Data.Technician.ID}}{{else}}/technicians{{end}}">
+  <label>Name
+    <input name="name" value="{{.Data.Technician.Name}}">
+    {{with index .Data.Fields "name"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Phone <span class="hint">optional</span>
+    <input name="phone" value="{{deref .Data.Technician.Phone}}">
+    {{with index .Data.Fields "phone"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Skill tags <span class="hint">comma separated, e.g. hvac, plumbing</span>
+    <input name="skill_tags" value="{{.Data.Tags}}">
+    {{with index .Data.Fields "skill_tags"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Hourly cost <span class="hint">dollars, e.g. 65.00</span>
+    <input name="hourly_cost" value="{{.Data.Rate}}">
+    {{with index .Data.Fields "hourly_cost"}}<span class="field-error">{{.}}</span>{{end}}
+    {{with index .Data.Fields "hourly_cost_cents"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>
+    <input type="checkbox" name="is_active" {{if .Data.Technician.IsActive}}checked{{end}} style="display:inline;width:auto"> Active
+  </label>
+  <div class="actions">
+    <button type="submit">Save</button>
+    <a class="button subtle" href="/technicians">Cancel</a>
+  </div>
+</form>
+{{end}}

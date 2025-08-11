@@ -1,0 +1,36 @@
+{{define "title"}}{{.Data.Technician.Name}} — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>{{.Data.Technician.Name}} {{if not .Data.Technician.IsActive}}<span class="badge inactive">inactive</span>{{end}}</h1>
+  <div class="actions">
+    <a class="button subtle" href="/technicians/{{.Data.Technician.ID}}/edit">Edit</a>
+    {{if eq (printf "%s" .User.Role) "admin"}}
+    <form class="inline-form" method="post" action="/technicians/{{.Data.Technician.ID}}/delete">
+      <button class="danger" type="submit">Delete</button>
+    </form>
+    {{end}}
+  </div>
+</div>
+<div class="detail-grid">
+  <div class="cell"><div class="label">Skills</div>{{if .Data.Technician.SkillTags}}{{join .Data.Technician.SkillTags ", "}}{{else}}—{{end}}</div>
+  <div class="cell"><div class="label">Phone</div>{{with .Data.Technician.Phone}}{{.}}{{else}}—{{end}}</div>
+  <div class="cell"><div class="label">Hourly cost</div>{{money .Data.Technician.HourlyCostCents}}</div>
+</div>
+<h2>Schedule</h2>
+{{if .Data.Schedule}}
+<table>
+  <tr><th>Start</th><th>End</th><th>Job</th><th>Status</th><th>Notes</th></tr>
+  {{range .Data.Schedule}}
+  <tr>
+    <td>{{datetime .Appointment.ScheduledStart}}</td>
+    <td>{{datetime .Appointment.ScheduledEnd}}</td>
+    <td><a href="/jobs/{{.Appointment.JobID}}">{{.JobTitle}}</a></td>
+    <td><span class="badge {{.JobStatus}}">{{title (printf "%s" .JobStatus)}}</span></td>
+    <td>{{deref .Appointment.CompletionNotes}}</td>
+  </tr>
+  {{end}}
+</table>
+{{else}}
+<div class="empty">Nothing on the schedule.</div>
+{{end}}
+{{end}}

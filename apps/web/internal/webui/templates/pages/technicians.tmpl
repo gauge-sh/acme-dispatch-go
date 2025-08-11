@@ -1,0 +1,37 @@
+{{define "title"}}Technicians — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>Technicians</h1>
+  <form method="get" action="/technicians">
+    <input type="search" name="skill" value="{{.Data.Skill}}" placeholder="Skill tag, e.g. hvac">
+    <select name="show">
+      <option value="" {{if eq .Data.Show ""}}selected{{end}}>Everyone</option>
+      <option value="active" {{if eq .Data.Show "active"}}selected{{end}}>Active</option>
+      <option value="inactive" {{if eq .Data.Show "inactive"}}selected{{end}}>Inactive</option>
+    </select>
+    <button type="submit" class="subtle">Filter</button>
+  </form>
+  <a class="button" href="/technicians/new">New technician</a>
+</div>
+{{if .Data.Technicians}}
+<table>
+  <tr><th>Name</th><th>Skills</th><th>Phone</th><th class="num">Hourly cost</th><th></th></tr>
+  {{range .Data.Technicians}}
+  <tr>
+    <td><a href="/technicians/{{.ID}}">{{.Name}}</a></td>
+    <td>{{join .SkillTags ", "}}</td>
+    <td>{{deref .Phone}}</td>
+    <td class="num">{{money .HourlyCostCents}}</td>
+    <td>{{if not .IsActive}}<span class="badge inactive">inactive</span>{{end}}</td>
+  </tr>
+  {{end}}
+</table>
+<div class="pager">
+  {{with .Data.Pager.PrevURL}}<a href="{{.}}">&larr; Previous</a>{{end}}
+  <span>Page {{.Data.Pager.Page}} of {{.Data.Pager.Pages}} · {{.Data.Pager.Total}} technicians</span>
+  {{with .Data.Pager.NextURL}}<a href="{{.}}">Next &rarr;</a>{{end}}
+</div>
+{{else}}
+<div class="empty">No technicians match. <a href="/technicians/new">Add one.</a></div>
+{{end}}
+{{end}}
