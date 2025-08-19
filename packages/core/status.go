@@ -20,6 +20,18 @@ func CanTransition(from, to JobStatus) bool {
 	return false
 }
 
+// NextStatuses lists the moves the transition path accepts from a status.
+// invoiced is excluded: it is reachable only through invoicing.
+func NextStatuses(from JobStatus) []JobStatus {
+	var out []JobStatus
+	for _, next := range nextStatuses[from] {
+		if next != StatusInvoiced {
+			out = append(out, next)
+		}
+	}
+	return out
+}
+
 func IsTerminal(status JobStatus) bool {
 	return status == StatusInvoiced || status == StatusCancelled
 }

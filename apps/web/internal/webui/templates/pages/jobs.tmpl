@@ -1,0 +1,46 @@
+{{define "title"}}Jobs — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>Jobs</h1>
+  <form method="get" action="/jobs">
+    <input type="search" name="q" value="{{.Data.Query}}" placeholder="Title">
+    <select name="status">
+      <option value="">Any status</option>
+      {{$selected := .Data.Status}}
+      {{range .Data.Statuses}}
+      <option value="{{.}}" {{if eq (printf "%s" .) $selected}}selected{{end}}>{{title (printf "%s" .)}}</option>
+      {{end}}
+    </select>
+    <select name="priority">
+      {{$priority := .Data.Priority}}
+      <option value="">Any priority</option>
+      {{range $p := list "low" "normal" "urgent"}}
+      <option value="{{$p}}" {{if eq $p $priority}}selected{{end}}>{{title $p}}</option>
+      {{end}}
+    </select>
+    <button type="submit" class="subtle">Filter</button>
+  </form>
+  <a class="button" href="/jobs/new">New job</a>
+</div>
+{{if .Data.Rows}}
+<table>
+  <tr><th>Title</th><th>Customer</th><th>Status</th><th>Priority</th><th>Opened</th></tr>
+  {{range .Data.Rows}}
+  <tr>
+    <td><a href="/jobs/{{.Job.ID}}">{{.Job.Title}}</a></td>
+    <td>{{.CustomerName}}</td>
+    <td><span class="badge {{.Job.Status}}">{{title (printf "%s" .Job.Status)}}</span></td>
+    <td><span class="badge {{.Job.Priority}}">{{.Job.Priority}}</span></td>
+    <td>{{date .Job.CreatedAt}}</td>
+  </tr>
+  {{end}}
+</table>
+<div class="pager">
+  {{with .Data.Pager.PrevURL}}<a href="{{.}}">&larr; Previous</a>{{end}}
+  <span>Page {{.Data.Pager.Page}} of {{.Data.Pager.Pages}} · {{.Data.Pager.Total}} jobs</span>
+  {{with .Data.Pager.NextURL}}<a href="{{.}}">Next &rarr;</a>{{end}}
+</div>
+{{else}}
+<div class="empty">No jobs match these filters. <a href="/jobs/new">Open one.</a></div>
+{{end}}
+{{end}}

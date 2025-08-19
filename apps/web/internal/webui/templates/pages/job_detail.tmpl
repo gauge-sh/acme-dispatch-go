@@ -1,0 +1,99 @@
+{{define "title"}}{{.Data.Job.Title}} — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>{{.Data.Job.Title}}
+    <span class="badge {{.Data.Job.Status}}">{{title (printf "%s" .Data.Job.Status)}}</span>
+    <span class="badge {{.Data.Job.Priority}}">{{.Data.Job.Priority}}</span>
+  </h1>
+  <div class="actions">
+    {{range .Data.NextStatuses}}
+    <form class="inline-form" method="post" action="/jobs/{{$.Data.Job.ID}}/transition">
+      <input type="hidden" name="status" value="{{.}}">
+      <button type="submit" class="subtle">Mark {{title (printf "%s" .)}}</button>
+    </form>
+    {{end}}
+    {{if .Data.CanInvoice}}
+    <form class="inline-form" method="post" action="/jobs/{{.Data.Job.ID}}/invoice">
+      <button type="submit">Create invoice</button>
+    </form>
+    {{end}}
+    {{with .Data.InvoiceID}}<a class="button subtle" href="/invoices/{{.}}">View invoice</a>{{end}}
+    <a class="button subtle" href="/jobs/{{.Data.Job.ID}}/edit">Edit</a>
+    <form class="inline-form" method="post" action="/jobs/{{.Data.Job.ID}}/delete">
+      <button class="danger" type="submit">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div class="cell"><div class="label">Customer</div><a href="/customers/{{.Data.Job.CustomerID}}">{{.Data.CustomerName}}</a></div>
+  <div class="cell"><div class="label">Opened</div>{{datetime .Data.Job.CreatedAt}}</div>
+  <div class="cell"><div class="label">Last update</div>{{datetime .Data.Job.UpdatedAt}}</div>
+</div>
+{{with .Data.Job.Description}}<p class="notes">{{.}}</p>{{end}}
+
+<h2>Appointments</h2>
+{{if .Data.Appointments}}
+<table>
+  <tr><th>Technician</th><th>Start</th><th>End</th><th>Notes</th><th></th></tr>
+  {{range .Data.Appointments}}
+  <tr>
+    <td><a href="/technicians/{{.Appointment.TechnicianID}}">{{.TechnicianName}}</a></td>
+    <td>{{datetime .Appointment.ScheduledStart}}</td>
+    <td>{{datetime .Appointment.ScheduledEnd}}</td>
+    <td>{{deref .Appointment.CompletionNotes}}</td>
+    <td class="actions">
+      <a class="button subtle" href="/appointments/{{.Appointment.ID}}/edit">Edit</a>
+      <form class="inline-form" method="post" action="/appointments/{{.Appointment.ID}}/delete">
+        <button class="danger" type="submit">Remove</button>
+      </form>
+    </td>
+  </tr>
+  {{end}}
+</table>
+{{else}}
+<div class="empty">No appointments yet{{if .Data.CanSchedule}} — schedule one to move this job forward{{end}}.</div>
+{{end}}
+{{if .Data.CanSchedule}}
+<p><a class="button subtle" href="/jobs/{{.Data.Job.ID}}/appointments/new">Schedule appointment</a></p>
+{{end}}
+
+<h2>Parts used</h2>
+{{if .Data.JobParts}}
+<table>
+  <tr><th>Part</th><th class="num">Quantity</th><th class="num">Unit price</th><th class="num">Amount</th><th></th></tr>
+  {{range .Data.JobParts}}
+  <tr>
+    <td><a href="/parts/{{.JobPart.PartID}}">{{.SKU}}</a> — {{.Name}}</td>
+    <td class="num">{{.JobPart.Quantity}}</td>
+    <td class="num">{{money .JobPart.UnitPriceCents}}</td>
+    <td class="num">{{money (mul .JobPart.Quantity .JobPart.UnitPriceCents)}}</td>
+    <td>
+      <form class="inline-form" method="post" action="/job-parts/{{.JobPart.ID}}/delete">
+        <button class="danger" type="submit">Return to stock</button>
+      </form>
+    </td>
+  </tr>
+  {{end}}
+</table>
+{{else}}
+<div class="empty">No parts recorded on this job.</div>
+{{end}}
+
+{{if .Data.CanAddParts}}
+<form class="stacked" method="post" action="/jobs/{{.Data.Job.ID}}/parts" style="margin-top:1rem">
+  <label>Part
+    <select name="part_id">
+      <option value="">Choose a part…</option>
+      {{range .Data.Parts}}
+      <option value="{{.PartID}}">{{.Part.SKU}} — {{.Part.Name}} ({{.QuantityOnHand}} on hand)</option>
+      {{end}}
+    </select>
+  </label>
+  <label>Quantity
+    <input name="quantity" type="number" min="1" value="1">
+  </label>
+  <button type="submit">Record part</button>
+</form>
+{{end}}
+{{end}}

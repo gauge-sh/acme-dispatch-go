@@ -1,0 +1,38 @@
+{{define "title"}}{{if .Data.Job.ID}}Edit job{{else}}New job{{end}} — Acme Dispatch{{end}}
+{{define "content"}}
+<h1>{{if .Data.Job.ID}}Edit {{.Data.Job.Title}}{{else}}New job{{end}}</h1>
+{{with .Data.Error}}<div class="error-banner">{{.}}</div>{{end}}
+<form class="stacked" method="post" action="{{if .Data.Job.ID}}/jobs/{{.Data.Job.ID}}{{else}}/jobs{{end}}">
+  <label>Customer
+    <select name="customer_id">
+      <option value="">Choose a customer…</option>
+      {{$current := .Data.Job.CustomerID}}
+      {{range .Data.Customers}}
+      <option value="{{.ID}}" {{if eq .ID $current}}selected{{end}}>{{.Name}}</option>
+      {{end}}
+    </select>
+    {{with index .Data.Fields "customer_id"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Title
+    <input name="title" value="{{.Data.Job.Title}}">
+    {{with index .Data.Fields "title"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Description <span class="hint">optional</span>
+    <textarea name="description" rows="4">{{deref .Data.Job.Description}}</textarea>
+    {{with index .Data.Fields "description"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Priority
+    <select name="priority">
+      {{$priority := printf "%s" .Data.Job.Priority}}
+      {{range $p := list "low" "normal" "urgent"}}
+      <option value="{{$p}}" {{if eq $p $priority}}selected{{end}}>{{title $p}}</option>
+      {{end}}
+    </select>
+    {{with index .Data.Fields "priority"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <div class="actions">
+    <button type="submit">Save</button>
+    <a class="button subtle" href="{{if .Data.Job.ID}}/jobs/{{.Data.Job.ID}}{{else}}/jobs{{end}}">Cancel</a>
+  </div>
+</form>
+{{end}}

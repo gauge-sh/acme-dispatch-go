@@ -31,6 +31,18 @@ func New(st *store.Store, sessionSecret []byte) http.Handler {
 
 	mux.HandleFunc("GET /{$}", app.auth(app.dashboard))
 
+	mux.HandleFunc("GET /jobs", app.auth(app.jobList))
+	mux.HandleFunc("GET /jobs/new", app.auth(app.jobNew))
+	mux.HandleFunc("POST /jobs", app.auth(app.jobCreate))
+	mux.HandleFunc("GET /jobs/{id}", app.auth(app.jobDetail))
+	mux.HandleFunc("GET /jobs/{id}/edit", app.auth(app.jobEdit))
+	mux.HandleFunc("POST /jobs/{id}", app.auth(app.jobUpdate))
+	mux.HandleFunc("POST /jobs/{id}/delete", app.auth(app.jobDelete))
+	mux.HandleFunc("POST /jobs/{id}/transition", app.auth(app.jobTransition))
+	mux.HandleFunc("POST /jobs/{id}/parts", app.auth(app.jobPartAdd))
+	mux.HandleFunc("POST /jobs/{id}/invoice", app.auth(app.jobInvoice))
+	mux.HandleFunc("POST /job-parts/{id}/delete", app.auth(app.jobPartRemove))
+
 	mux.HandleFunc("GET /customers", app.auth(app.customerList))
 	mux.HandleFunc("GET /customers/new", app.auth(app.customerNew))
 	mux.HandleFunc("POST /customers", app.auth(app.customerCreate))
