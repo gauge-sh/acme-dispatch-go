@@ -73,5 +73,8 @@ func New(st *store.Store, sessionSecret []byte) http.Handler {
 	mux.HandleFunc("POST /parts/{id}/delete", app.auth(app.requireAdmin(app.partDelete)))
 	mux.HandleFunc("POST /parts/{id}/stock", app.auth(app.stockAdjust))
 
+	mux.HandleFunc("GET /invoices", app.auth(app.invoiceList))
+	mux.HandleFunc("GET /invoices/{id}", app.auth(app.invoiceDetail))
+
 	return mux
 }

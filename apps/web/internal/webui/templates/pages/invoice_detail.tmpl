@@ -1,0 +1,25 @@
+{{define "title"}}Invoice {{.Data.Invoice.ID}} — Acme Dispatch{{end}}
+{{define "content"}}
+<h1>Invoice record #{{.Data.Invoice.ID}}</h1>
+<div class="detail-grid">
+  <div class="cell"><div class="label">Job</div><a href="/jobs/{{.Data.Invoice.JobID}}">{{.Data.JobTitle}}</a></div>
+  <div class="cell"><div class="label">Customer</div>{{.Data.CustomerName}}</div>
+  <div class="cell"><div class="label">Created</div>{{datetime .Data.Invoice.CreatedAt}}</div>
+</div>
+<table>
+  <tr><th>Line</th><th class="num">Quantity</th><th class="num">Unit</th><th class="num">Amount</th><th>Weekend</th></tr>
+  {{range .Data.Invoice.LineItems}}
+  <tr>
+    <td>{{.Description}}</td>
+    <td class="num">{{.Quantity}}</td>
+    <td class="num">{{money .UnitCents}}</td>
+    <td class="num">{{money .AmountCents}}</td>
+    <td>{{if .Weekend}}+15%{{end}}</td>
+  </tr>
+  {{end}}
+  <tr><td colspan="3"><strong>Labor</strong></td><td class="num">{{money .Data.Invoice.LaborCents}}</td><td></td></tr>
+  <tr><td colspan="3"><strong>Parts</strong></td><td class="num">{{money .Data.Invoice.PartsCents}}</td><td></td></tr>
+  <tr><td colspan="3"><strong>Total</strong></td><td class="num"><strong>{{money .Data.Invoice.TotalCents}}</strong></td><td></td></tr>
+</table>
+<p class="notes">Invoice records are immutable: they capture what was billable when the job closed.</p>
+{{end}}

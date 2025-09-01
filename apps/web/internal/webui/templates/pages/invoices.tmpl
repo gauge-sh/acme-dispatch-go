@@ -1,0 +1,27 @@
+{{define "title"}}Invoices — Acme Dispatch{{end}}
+{{define "content"}}
+<h1>Invoice records</h1>
+{{if .Data.Rows}}
+<table>
+  <tr><th>#</th><th>Job</th><th>Customer</th><th class="num">Labor</th><th class="num">Parts</th><th class="num">Total</th><th>Created</th></tr>
+  {{range .Data.Rows}}
+  <tr>
+    <td><a href="/invoices/{{.Invoice.ID}}">{{.Invoice.ID}}</a></td>
+    <td><a href="/jobs/{{.Invoice.JobID}}">{{.JobTitle}}</a></td>
+    <td>{{.CustomerName}}</td>
+    <td class="num">{{money .Invoice.LaborCents}}</td>
+    <td class="num">{{money .Invoice.PartsCents}}</td>
+    <td class="num">{{money .Invoice.TotalCents}}</td>
+    <td>{{date .Invoice.CreatedAt}}</td>
+  </tr>
+  {{end}}
+</table>
+<div class="pager">
+  {{with .Data.Pager.PrevURL}}<a href="{{.}}">&larr; Previous</a>{{end}}
+  <span>Page {{.Data.Pager.Page}} of {{.Data.Pager.Pages}} · {{.Data.Pager.Total}} invoices</span>
+  {{with .Data.Pager.NextURL}}<a href="{{.}}">Next &rarr;</a>{{end}}
+</div>
+{{else}}
+<div class="empty">Nothing invoiced yet. Completed jobs grow an invoice button on their page.</div>
+{{end}}
+{{end}}
