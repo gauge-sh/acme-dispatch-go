@@ -1,0 +1,29 @@
+{{define "title"}}{{if .Data.Part.ID}}Edit part{{else}}New part{{end}} — Acme Dispatch{{end}}
+{{define "content"}}
+<h1>{{if .Data.Part.ID}}Edit {{.Data.Part.SKU}}{{else}}New part{{end}}</h1>
+{{with .Data.Error}}<div class="error-banner">{{.}}</div>{{end}}
+<form class="stacked" method="post" action="{{if .Data.Part.ID}}/parts/{{.Data.Part.ID}}{{else}}/parts{{end}}">
+  <label>SKU <span class="hint">upper-case letters, digits, dashes</span>
+    <input name="sku" value="{{.Data.Part.SKU}}">
+    {{with index .Data.Fields "sku"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Name
+    <input name="name" value="{{.Data.Part.Name}}">
+    {{with index .Data.Fields "name"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Unit cost <span class="hint">dollars</span>
+    <input name="unit_cost" value="{{.Data.Cost}}">
+    {{with index .Data.Fields "unit_cost"}}<span class="field-error">{{.}}</span>{{end}}
+    {{with index .Data.Fields "unit_cost_cents"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Unit price <span class="hint">dollars; may not be below cost</span>
+    <input name="unit_price" value="{{.Data.Price}}">
+    {{with index .Data.Fields "unit_price"}}<span class="field-error">{{.}}</span>{{end}}
+    {{with index .Data.Fields "unit_price_cents"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <div class="actions">
+    <button type="submit">Save</button>
+    <a class="button subtle" href="/parts">Cancel</a>
+  </div>
+</form>
+{{end}}

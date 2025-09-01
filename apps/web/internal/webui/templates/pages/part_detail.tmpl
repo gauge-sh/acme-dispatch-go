@@ -1,0 +1,47 @@
+{{define "title"}}{{.Data.Part.SKU}} — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>{{.Data.Part.SKU}} — {{.Data.Part.Name}}</h1>
+  <div class="actions">
+    <a class="button subtle" href="/parts/{{.Data.Part.ID}}/edit">Edit</a>
+    {{if eq (printf "%s" .User.Role) "admin"}}
+    <form class="inline-form" method="post" action="/parts/{{.Data.Part.ID}}/delete">
+      <button class="danger" type="submit">Delete</button>
+    </form>
+    {{end}}
+  </div>
+</div>
+<div class="detail-grid">
+  <div class="cell"><div class="label">Unit cost</div>{{money .Data.Part.UnitCostCents}}</div>
+  <div class="cell"><div class="label">Unit price</div>{{money .Data.Part.UnitPriceCents}}</div>
+  <div class="cell"><div class="label">On hand</div>{{.Data.Level.QuantityOnHand}}</div>
+</div>
+
+<h2>Adjust stock</h2>
+<form class="stacked" method="post" action="/parts/{{.Data.Part.ID}}/stock">
+  <label>Change <span class="hint">positive to receive, negative to write off</span>
+    <input name="delta" type="number" value="">
+  </label>
+  <label>Reason <span class="hint">optional</span>
+    <input name="reason" placeholder="e.g. received PO 118">
+  </label>
+  <button type="submit">Apply</button>
+</form>
+
+<h2>Adjustment history</h2>
+{{if .Data.Adjustments}}
+<table>
+  <tr><th>When</th><th class="num">Change</th><th class="num">On hand after</th><th>Reason</th></tr>
+  {{range .Data.Adjustments}}
+  <tr>
+    <td>{{datetime .CreatedAt}}</td>
+    <td class="num">{{if gt .Delta 0}}+{{end}}{{.Delta}}</td>
+    <td class="num">{{.QuantityAfter}}</td>
+    <td>{{deref .Reason}}</td>
+  </tr>
+  {{end}}
+</table>
+{{else}}
+<div class="empty">No stock movement recorded yet.</div>
+{{end}}
+{{end}}

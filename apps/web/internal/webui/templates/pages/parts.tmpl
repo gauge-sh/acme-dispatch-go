@@ -1,0 +1,34 @@
+{{define "title"}}Parts — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>Parts &amp; stock</h1>
+  <form method="get" action="/parts">
+    <input type="search" name="q" value="{{.Data.Query}}" placeholder="SKU or name">
+    <button type="submit" class="subtle">Search</button>
+  </form>
+  <a class="button" href="/parts/new">New part</a>
+</div>
+{{if .Data.Levels}}
+<table>
+  <tr><th>SKU</th><th>Name</th><th class="num">Unit cost</th><th class="num">Unit price</th><th class="num">On hand</th></tr>
+  {{range .Data.Levels}}
+  <tr>
+    <td><a href="/parts/{{.Part.ID}}">{{.Part.SKU}}</a></td>
+    <td>{{.Part.Name}}</td>
+    <td class="num">{{money .Part.UnitCostCents}}</td>
+    <td class="num">{{money .Part.UnitPriceCents}}</td>
+    <td class="num">{{.QuantityOnHand}}</td>
+  </tr>
+  {{end}}
+</table>
+<div class="pager">
+  {{with .Data.Pager.PrevURL}}<a href="{{.}}">&larr; Previous</a>{{end}}
+  <span>Page {{.Data.Pager.Page}} of {{.Data.Pager.Pages}} · {{.Data.Pager.Total}} parts</span>
+  {{with .Data.Pager.NextURL}}<a href="{{.}}">Next &rarr;</a>{{end}}
+</div>
+{{else if .Data.Query}}
+<div class="empty">No parts match “{{.Data.Query}}”.</div>
+{{else}}
+<div class="empty">The parts catalog is empty. <a href="/parts/new">Add the first part.</a></div>
+{{end}}
+{{end}}

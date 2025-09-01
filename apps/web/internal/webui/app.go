@@ -64,5 +64,14 @@ func New(st *store.Store, sessionSecret []byte) http.Handler {
 	mux.HandleFunc("POST /technicians/{id}", app.auth(app.technicianUpdate))
 	mux.HandleFunc("POST /technicians/{id}/delete", app.auth(app.requireAdmin(app.technicianDelete)))
 
+	mux.HandleFunc("GET /parts", app.auth(app.partList))
+	mux.HandleFunc("GET /parts/new", app.auth(app.partNew))
+	mux.HandleFunc("POST /parts", app.auth(app.partCreate))
+	mux.HandleFunc("GET /parts/{id}", app.auth(app.partDetail))
+	mux.HandleFunc("GET /parts/{id}/edit", app.auth(app.partEdit))
+	mux.HandleFunc("POST /parts/{id}", app.auth(app.partUpdate))
+	mux.HandleFunc("POST /parts/{id}/delete", app.auth(app.requireAdmin(app.partDelete)))
+	mux.HandleFunc("POST /parts/{id}/stock", app.auth(app.stockAdjust))
+
 	return mux
 }
