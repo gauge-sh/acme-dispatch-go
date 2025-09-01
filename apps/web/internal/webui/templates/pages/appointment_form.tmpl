@@ -1,0 +1,33 @@
+{{define "title"}}{{if .Data.Appointment.ID}}Edit appointment{{else}}Schedule appointment{{end}} — Acme Dispatch{{end}}
+{{define "content"}}
+<h1>{{if .Data.Appointment.ID}}Edit appointment{{else}}Schedule appointment{{end}} for <a href="/jobs/{{.Data.JobID}}">{{.Data.JobTitle}}</a></h1>
+{{with .Data.Error}}<div class="error-banner">{{.}}</div>{{end}}
+<form class="stacked" method="post" action="{{if .Data.Appointment.ID}}/appointments/{{.Data.Appointment.ID}}{{else}}/jobs/{{.Data.JobID}}/appointments{{end}}">
+  <label>Technician
+    <select name="technician_id">
+      <option value="">Choose a technician…</option>
+      {{$current := .Data.Appointment.TechnicianID}}
+      {{range .Data.Technicians}}
+      <option value="{{.ID}}" {{if eq .ID $current}}selected{{end}}>{{.Name}} ({{join .SkillTags ", "}})</option>
+      {{end}}
+    </select>
+    {{with index .Data.Fields "technician_id"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Starts <span class="hint">UTC</span>
+    <input type="datetime-local" name="scheduled_start" value="{{inputTime .Data.Appointment.ScheduledStart}}">
+    {{with index .Data.Fields "scheduled_start"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Ends <span class="hint">UTC</span>
+    <input type="datetime-local" name="scheduled_end" value="{{inputTime .Data.Appointment.ScheduledEnd}}">
+    {{with index .Data.Fields "scheduled_end"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Completion notes <span class="hint">optional, filled in after the visit</span>
+    <textarea name="completion_notes" rows="3">{{deref .Data.Appointment.CompletionNotes}}</textarea>
+    {{with index .Data.Fields "completion_notes"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <div class="actions">
+    <button type="submit">Save</button>
+    <a class="button subtle" href="/jobs/{{.Data.JobID}}">Cancel</a>
+  </div>
+</form>
+{{end}}
