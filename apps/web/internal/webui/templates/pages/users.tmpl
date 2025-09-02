@@ -1,0 +1,27 @@
+{{define "title"}}Users — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>Users</h1>
+  <a class="button" href="/users/new">New user</a>
+</div>
+{{if .Data.Users}}
+<table>
+  <tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr>
+  {{range .Data.Users}}
+  <tr>
+    <td><a href="/users/{{.ID}}">{{.Name}}</a></td>
+    <td>{{.Email}}</td>
+    <td><span class="badge">{{.Role}}</span></td>
+    <td>{{if not .IsActive}}<span class="badge inactive">inactive</span>{{end}}</td>
+  </tr>
+  {{end}}
+</table>
+<div class="pager">
+  {{with .Data.Pager.PrevURL}}<a href="{{.}}">&larr; Previous</a>{{end}}
+  <span>Page {{.Data.Pager.Page}} of {{.Data.Pager.Pages}} · {{.Data.Pager.Total}} users</span>
+  {{with .Data.Pager.NextURL}}<a href="{{.}}">Next &rarr;</a>{{end}}
+</div>
+{{else}}
+<div class="empty">No users yet.</div>
+{{end}}
+{{end}}

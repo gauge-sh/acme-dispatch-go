@@ -1,0 +1,51 @@
+{{define "title"}}{{.Data.Target.Name}} — Acme Dispatch{{end}}
+{{define "content"}}
+<div class="page-head">
+  <h1>{{.Data.Target.Name}} <span class="badge">{{.Data.Target.Role}}</span>
+    {{if not .Data.Target.IsActive}}<span class="badge inactive">inactive</span>{{end}}</h1>
+  <div class="actions">
+    <a class="button subtle" href="/users/{{.Data.Target.ID}}/edit">Edit</a>
+    <form class="inline-form" method="post" action="/users/{{.Data.Target.ID}}/delete">
+      <button class="danger" type="submit">Delete</button>
+    </form>
+  </div>
+</div>
+<div class="detail-grid">
+  <div class="cell"><div class="label">Email</div>{{.Data.Target.Email}}</div>
+  <div class="cell"><div class="label">Member since</div>{{date .Data.Target.CreatedAt}}</div>
+</div>
+
+<h2>API tokens</h2>
+{{with .Data.NewToken}}
+<div class="flash">
+  New token (copy it now — it is shown only this once):
+  <code>{{.}}</code>
+</div>
+{{end}}
+{{if .Data.Tokens}}
+<table>
+  <tr><th>Name</th><th>Created</th><th>Last used</th><th></th></tr>
+  {{range .Data.Tokens}}
+  <tr>
+    <td>{{.Name}}</td>
+    <td>{{date .CreatedAt}}</td>
+    <td>{{datetime .LastUsedAt}}</td>
+    <td>
+      <form class="inline-form" method="post" action="/tokens/{{.ID}}/delete">
+        <input type="hidden" name="user_id" value="{{.UserID}}">
+        <button class="danger" type="submit">Revoke</button>
+      </form>
+    </td>
+  </tr>
+  {{end}}
+</table>
+{{else}}
+<div class="empty">No API tokens issued for this user.</div>
+{{end}}
+<form class="stacked" method="post" action="/users/{{.Data.Target.ID}}/tokens" style="margin-top:1rem">
+  <label>Token name
+    <input name="name" placeholder="e.g. reporting script">
+  </label>
+  <button type="submit">Issue token</button>
+</form>
+{{end}}

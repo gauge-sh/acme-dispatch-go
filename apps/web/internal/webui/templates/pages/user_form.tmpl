@@ -1,0 +1,34 @@
+{{define "title"}}{{if .Data.Target.ID}}Edit user{{else}}New user{{end}} — Acme Dispatch{{end}}
+{{define "content"}}
+<h1>{{if .Data.Target.ID}}Edit {{.Data.Target.Name}}{{else}}New user{{end}}</h1>
+{{with .Data.Error}}<div class="error-banner">{{.}}</div>{{end}}
+<form class="stacked" method="post" action="{{if .Data.Target.ID}}/users/{{.Data.Target.ID}}{{else}}/users{{end}}">
+  <label>Email
+    <input type="email" name="email" value="{{.Data.Target.Email}}">
+    {{with index .Data.Fields "email"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Name
+    <input name="name" value="{{.Data.Target.Name}}">
+    {{with index .Data.Fields "name"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Role
+    <select name="role">
+      {{$role := printf "%s" .Data.Target.Role}}
+      <option value="dispatcher" {{if eq $role "dispatcher"}}selected{{end}}>Dispatcher</option>
+      <option value="admin" {{if eq $role "admin"}}selected{{end}}>Admin</option>
+    </select>
+    {{with index .Data.Fields "role"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>Password {{if .Data.Target.ID}}<span class="hint">leave blank to keep the current one</span>{{end}}
+    <input type="password" name="password">
+    {{with index .Data.Fields "password"}}<span class="field-error">{{.}}</span>{{end}}
+  </label>
+  <label>
+    <input type="checkbox" name="is_active" {{if .Data.Target.IsActive}}checked{{end}} style="display:inline;width:auto"> Active
+  </label>
+  <div class="actions">
+    <button type="submit">Save</button>
+    <a class="button subtle" href="/users">Cancel</a>
+  </div>
+</form>
+{{end}}

@@ -76,5 +76,15 @@ func New(st *store.Store, sessionSecret []byte) http.Handler {
 	mux.HandleFunc("GET /invoices", app.auth(app.invoiceList))
 	mux.HandleFunc("GET /invoices/{id}", app.auth(app.invoiceDetail))
 
+	mux.HandleFunc("GET /users", app.auth(app.requireAdmin(app.userList)))
+	mux.HandleFunc("GET /users/new", app.auth(app.requireAdmin(app.userNew)))
+	mux.HandleFunc("POST /users", app.auth(app.requireAdmin(app.userCreate)))
+	mux.HandleFunc("GET /users/{id}", app.auth(app.requireAdmin(app.userDetail)))
+	mux.HandleFunc("GET /users/{id}/edit", app.auth(app.requireAdmin(app.userEdit)))
+	mux.HandleFunc("POST /users/{id}", app.auth(app.requireAdmin(app.userUpdate)))
+	mux.HandleFunc("POST /users/{id}/delete", app.auth(app.requireAdmin(app.userDelete)))
+	mux.HandleFunc("POST /users/{id}/tokens", app.auth(app.requireAdmin(app.tokenIssue)))
+	mux.HandleFunc("POST /tokens/{id}/delete", app.auth(app.requireAdmin(app.tokenRevoke)))
+
 	return mux
 }
