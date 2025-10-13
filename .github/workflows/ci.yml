@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.0"
+          cache-dependency-path: |
+            packages/core/go.sum
+            apps/api/go.sum
+            apps/web/go.sum
+      - name: Lint
+        run: make lint
+      - name: Build
+        run: make build
+      - name: Test
+        run: make test
