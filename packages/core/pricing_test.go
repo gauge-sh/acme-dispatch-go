@@ -195,3 +195,35 @@ func TestCheckInvoiceable(t *testing.T) {
 		t.Errorf("double invoice: %v", err)
 	}
 }
+
+func TestWeekendAndUrgentStack(t *testing.T) {
+	saturday := time.Date(2025, 3, 15, 9, 0, 0, 0, time.UTC)
+	// 2h × 5000 × 1.6 = 16000, ×1.15 = 18400 on the line;
+	// urgent then lifts the total: 18400 × 1.1 = 20240.
+	inv := PriceInvoice(PriorityUrgent, []LaborInput{labor(1, "Sam", 5000, saturday, 2)}, nil)
+	if inv.LaborCents != 18400 {
+		t.Errorf("labor: got %d, want 18400", inv.LaborCents)
+	}
+	if inv.TotalCents != 20240 {
+		t.Errorf("total: got %d, want 20240", inv.TotalCents)
+	}
+	if inv.LineItems[0].AmountCents != 18400 {
+		t.Errorf("line keeps only the weekend surcharge: %d", inv.LineItems[0].AmountCents)
+	}
+}
+
+func TestCaseFiveLineOrdering(t *testing.T) {
+	weekday := time.Date(2025, 3, 12, 9, 0, 0, 0, time.UTC)
+	sunday := time.Date(2025, 3, 16, 9, 0, 0, 0, time.UTC)
+	// Feed them out of order; the invoice sorts by start time.
+	inv := PriceInvoice(PriorityNormal, []LaborInput{
+		labor(2, "Sunday Tech", 5000, sunday, 1),
+		labor(1, "Weekday Tech", 5000, weekday, 2),
+	}, nil)
+	if inv.LineItems[0].Weekend || !inv.LineItems[1].Weekend {
+		t.Fatalf("ordering: %+v", inv.LineItems)
+	}
+	if inv.TotalCents != 25200 {
+		t.Fatalf("total: %d", inv.TotalCents)
+	}
+}
