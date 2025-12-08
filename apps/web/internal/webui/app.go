@@ -86,5 +86,5 @@ func New(st *store.Store, sessionSecret []byte) http.Handler {
 	mux.HandleFunc("POST /users/{id}/tokens", app.auth(app.requireAdmin(app.tokenIssue)))
 	mux.HandleFunc("POST /tokens/{id}/delete", app.auth(app.requireAdmin(app.tokenRevoke)))
 
-	return secureHeaders(mux)
+	return secureHeaders(sameOriginPosts(mux))
 }

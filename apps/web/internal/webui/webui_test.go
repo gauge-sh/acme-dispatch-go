@@ -321,3 +321,35 @@ func TestSeededPagesRender(t *testing.T) {
 	mustContain(t, body, "Invoice record #1")
 	mustContain(t, body, "$")
 }
+
+func TestCrossSitePostsRefused(t *testing.T) {
+	app := newTestApp(t)
+	app.login("staff@test.example", "staff-password")
+
+	req, _ := http.NewRequest("POST", app.server.URL+"/customers",
+		strings.NewReader("name=Evil&service_address=1+Bad+St"))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sec-Fetch-Site", "cross-site")
+	resp, err := app.client.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("cross-site post got %d", resp.StatusCode)
+	}
+
+	// Same-origin posts are untouched.
+	req, _ = http.NewRequest("POST", app.server.URL+"/customers",
+		strings.NewReader("name=Fine&service_address=1+Good+St"))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sec-Fetch-Site", "same-origin")
+	resp, err = app.client.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("same-origin post got %d", resp.StatusCode)
+	}
+}
