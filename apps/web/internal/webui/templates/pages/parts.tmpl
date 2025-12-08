@@ -17,7 +17,7 @@
     <td>{{.Part.Name}}</td>
     <td class="num">{{money .Part.UnitCostCents}}</td>
     <td class="num">{{money .Part.UnitPriceCents}}</td>
-    <td class="num">{{.QuantityOnHand}}</td>
+    <td class="num">{{.QuantityOnHand}} {{if lt .QuantityOnHand 5}}<span class="badge urgent">low</span>{{end}}</td>
   </tr>
   {{end}}
 </table>
