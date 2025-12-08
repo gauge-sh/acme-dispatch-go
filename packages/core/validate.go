@@ -26,6 +26,20 @@ func requireRange(fields map[string]string, name, value string, min, max int) {
 	}
 }
 
+// trimOptional trims an optional field and folds a blank value to nil, so
+// "  " never sneaks past a presence check.
+func trimOptional(value **string) {
+	if *value == nil {
+		return
+	}
+	trimmed := strings.TrimSpace(**value)
+	if trimmed == "" {
+		*value = nil
+		return
+	}
+	*value = &trimmed
+}
+
 func emailShaped(s string) string {
 	if !strings.Contains(s, "@") {
 		return "must be an email address"
@@ -57,6 +71,9 @@ func failValidation(fields map[string]string) error {
 func ValidateCustomer(c *Customer) error {
 	c.Name = strings.TrimSpace(c.Name)
 	c.ServiceAddress = strings.TrimSpace(c.ServiceAddress)
+	trimOptional(&c.ContactEmail)
+	trimOptional(&c.Phone)
+	trimOptional(&c.Notes)
 	fields := map[string]string{}
 	requireRange(fields, "name", c.Name, 1, 160)
 	requireRange(fields, "service_address", c.ServiceAddress, 1, 240)
@@ -101,6 +118,7 @@ func ValidateTechnician(t *Technician) error {
 		return err
 	}
 	t.SkillTags = tags
+	trimOptional(&t.Phone)
 	fields := map[string]string{}
 	requireRange(fields, "name", t.Name, 1, 120)
 	checkOptional(fields, "phone", t.Phone, phoneShaped)

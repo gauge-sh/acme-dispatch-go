@@ -164,3 +164,25 @@ func TestValidateAppointmentNotes(t *testing.T) {
 		t.Fatal("2001-char notes accepted")
 	}
 }
+
+func TestOptionalFieldsAreTrimmed(t *testing.T) {
+	c := validCustomer()
+	c.Phone = str("  555-0100  ")
+	c.Notes = str("   ")
+	if err := ValidateCustomer(&c); err != nil {
+		t.Fatal(err)
+	}
+	if c.Phone == nil || *c.Phone != "555-0100" {
+		t.Errorf("phone not trimmed: %v", c.Phone)
+	}
+	if c.Notes != nil {
+		t.Errorf("blank notes should fold to nil: %q", *c.Notes)
+	}
+
+	// Padding must not carry a too-short phone past the length check.
+	c = validCustomer()
+	c.Phone = str("  123  ")
+	if err := ValidateCustomer(&c); err == nil {
+		t.Error("padded short phone accepted")
+	}
+}
