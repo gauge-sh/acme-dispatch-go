@@ -55,7 +55,11 @@ func nullOn(fields map[string]string, name string, set, null bool) {
 	}
 }
 
-func decodeJSON(r *http.Request, dst any) error {
+// maxBodyBytes is far above any legitimate payload; it exists so a broken
+// client cannot stream junk at the decoder forever.
+const maxBodyBytes = 1 << 20
+
+func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	if r.Body == nil {
 		return core.Invalid("invalid request body")
 	}
@@ -65,7 +69,7 @@ func decodeJSON(r *http.Request, dst any) error {
 			return core.Invalid("requests must be application/json")
 		}
 	}
-	dec := json.NewDecoder(r.Body)
+	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBodyBytes))
 	if err := dec.Decode(dst); err != nil {
 		return core.Invalid("invalid request body")
 	}

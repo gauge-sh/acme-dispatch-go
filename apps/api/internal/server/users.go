@@ -34,7 +34,7 @@ func (p userPayload) applyTo(u *core.User) {
 
 func (s *Server) createUser(w http.ResponseWriter, r *http.Request) {
 	var payload userPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -77,7 +77,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var payload userPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}

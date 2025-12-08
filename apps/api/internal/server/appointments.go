@@ -46,7 +46,7 @@ func (p appointmentPayload) applyTo(a *core.Appointment) {
 
 func (s *Server) createAppointment(w http.ResponseWriter, r *http.Request) {
 	var payload appointmentPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -93,7 +93,7 @@ func (s *Server) patchAppointment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var payload appointmentPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}

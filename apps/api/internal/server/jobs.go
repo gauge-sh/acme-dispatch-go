@@ -78,7 +78,7 @@ func (s *Server) jobDetail(job *core.Job) (*jobDetail, error) {
 
 func (s *Server) createJob(w http.ResponseWriter, r *http.Request) {
 	var payload jobPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -126,7 +126,7 @@ func (s *Server) patchJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var payload jobPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -164,7 +164,7 @@ func (s *Server) transitionJob(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		Status string `json:"status"`
 	}
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -191,7 +191,7 @@ func (s *Server) addJobPart(w http.ResponseWriter, r *http.Request) {
 		PartID   Opt[int64] `json:"part_id"`
 		Quantity Opt[int64] `json:"quantity"`
 	}
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}

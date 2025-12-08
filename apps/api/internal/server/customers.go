@@ -32,7 +32,7 @@ func (p customerPayload) applyTo(c *core.Customer) {
 
 func (s *Server) createCustomer(w http.ResponseWriter, r *http.Request) {
 	var payload customerPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -75,7 +75,7 @@ func (s *Server) patchCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var payload customerPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}

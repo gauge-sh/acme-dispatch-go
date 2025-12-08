@@ -32,7 +32,7 @@ func (p partPayload) applyTo(part *core.Part) {
 
 func (s *Server) createPart(w http.ResponseWriter, r *http.Request) {
 	var payload partPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -75,7 +75,7 @@ func (s *Server) patchPart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var payload partPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -147,7 +147,7 @@ func (s *Server) adjustStock(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		Delta Opt[int64] `json:"delta"`
 	}
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}

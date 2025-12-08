@@ -36,7 +36,7 @@ func (p technicianPayload) applyTo(t *core.Technician) {
 
 func (s *Server) createTechnician(w http.ResponseWriter, r *http.Request) {
 	var payload technicianPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -79,7 +79,7 @@ func (s *Server) patchTechnician(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var payload technicianPayload
-	if err := decodeJSON(r, &payload); err != nil {
+	if err := decodeJSON(w, r, &payload); err != nil {
 		writeError(w, err)
 		return
 	}
