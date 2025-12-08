@@ -18,6 +18,13 @@
       <option value="{{$p}}" {{if eq $p $priority}}selected{{end}}>{{title $p}}</option>
       {{end}}
     </select>
+    <select name="customer_id">
+      <option value="">Any customer</option>
+      {{$customer := .Data.CustomerID}}
+      {{range .Data.Customers}}
+      <option value="{{.ID}}" {{if eq (printf "%d" .ID) $customer}}selected{{end}}>{{.Name}}</option>
+      {{end}}
+    </select>
     <button type="submit" class="subtle">Filter</button>
   </form>
   <a class="button" href="/jobs/new">New job</a>

@@ -3,6 +3,7 @@ package webui
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/acme-dispatch/dispatch/core"
 	"github.com/acme-dispatch/dispatch/core/store"
@@ -32,12 +33,20 @@ func (a *App) jobList(w http.ResponseWriter, r *http.Request) {
 	if priority, ok := core.ParsePriority(formStr(r, "priority")); ok {
 		filter.Priority = &priority
 	}
+	if customerID, err := strconv.ParseInt(formStr(r, "customer_id"), 10, 64); err == nil && customerID > 0 {
+		filter.CustomerID = &customerID
+	}
 	jobs, total, err := a.store.ListJobs(filter, page)
 	if err != nil {
 		a.serverError(w, err)
 		return
 	}
 	names, err := a.customerNames()
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
+	customers, _, err := a.store.ListCustomers(store.CustomerFilter{}, store.Page{Number: 1, Size: 100})
 	if err != nil {
 		a.serverError(w, err)
 		return
@@ -51,13 +60,16 @@ func (a *App) jobList(w http.ResponseWriter, r *http.Request) {
 		rows = append(rows, row{Job: job, CustomerName: names[job.CustomerID]})
 	}
 	a.render(w, r, http.StatusOK, "jobs", struct {
-		Rows     []row
-		Query    string
-		Status   string
-		Priority string
-		Statuses []core.JobStatus
-		Pager    pager
-	}{rows, formStr(r, "q"), formStr(r, "status"), formStr(r, "priority"), core.JobStatuses, makePager(r, page, total)})
+		Rows       []row
+		Query      string
+		Status     string
+		Priority   string
+		CustomerID string
+		Customers  []core.Customer
+		Statuses   []core.JobStatus
+		Pager      pager
+	}{rows, formStr(r, "q"), formStr(r, "status"), formStr(r, "priority"),
+		formStr(r, "customer_id"), customers, core.JobStatuses, makePager(r, page, total)})
 }
 
 func (a *App) jobNew(w http.ResponseWriter, r *http.Request) {
