@@ -66,7 +66,7 @@ func New(st *store.Store) http.Handler {
 		writeErrorCode(w, http.StatusNotFound, "not_found", "not found")
 	})
 
-	return s.authenticate(mux)
+	return requestLog(s.authenticate(mux))
 }
 
 // fieldError folds per-field messages into one validation error, using the
