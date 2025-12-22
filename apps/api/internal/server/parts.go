@@ -52,7 +52,7 @@ func (s *Server) createPart(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getPart(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "part not found")
+		notFound(w, "part")
 		return
 	}
 	part, err := s.store.PartByID(id)
@@ -66,7 +66,7 @@ func (s *Server) getPart(w http.ResponseWriter, r *http.Request) {
 func (s *Server) patchPart(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "part not found")
+		notFound(w, "part")
 		return
 	}
 	part, err := s.store.PartByID(id)
@@ -94,7 +94,7 @@ func (s *Server) patchPart(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deletePart(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "part not found")
+		notFound(w, "part")
 		return
 	}
 	if err := s.store.DeletePart(id); err != nil {
@@ -141,7 +141,7 @@ func (s *Server) listStockLevels(w http.ResponseWriter, r *http.Request) {
 func (s *Server) adjustStock(w http.ResponseWriter, r *http.Request) {
 	partID, ok := pathInt(r, "part_id")
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "part not found")
+		notFound(w, "part")
 		return
 	}
 	var payload struct {

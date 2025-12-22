@@ -51,6 +51,10 @@ func writeError(w http.ResponseWriter, err error) {
 	writeErrorCode(w, http.StatusInternalServerError, "internal", "something went wrong")
 }
 
+func notFound(w http.ResponseWriter, entity string) {
+	writeErrorCode(w, http.StatusNotFound, "not_found", entity+" not found")
+}
+
 type listEnvelope struct {
 	Items   any `json:"items"`
 	Page    int `json:"page"`

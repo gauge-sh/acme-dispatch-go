@@ -9,7 +9,7 @@ import (
 func (s *Server) getInvoiceRecord(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "invoice record not found")
+		notFound(w, "invoice record")
 		return
 	}
 	record, err := s.store.InvoiceRecordByID(id)

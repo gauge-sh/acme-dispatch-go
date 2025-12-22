@@ -98,7 +98,7 @@ func (s *Server) createJob(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getJob(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "job not found")
+		notFound(w, "job")
 		return
 	}
 	job, err := s.store.JobByID(id)
@@ -117,7 +117,7 @@ func (s *Server) getJob(w http.ResponseWriter, r *http.Request) {
 func (s *Server) patchJob(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "job not found")
+		notFound(w, "job")
 		return
 	}
 	job, err := s.store.JobByID(id)
@@ -145,7 +145,7 @@ func (s *Server) patchJob(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deleteJob(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "job not found")
+		notFound(w, "job")
 		return
 	}
 	if err := s.store.DeleteJob(id); err != nil {
@@ -158,7 +158,7 @@ func (s *Server) deleteJob(w http.ResponseWriter, r *http.Request) {
 func (s *Server) transitionJob(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "job not found")
+		notFound(w, "job")
 		return
 	}
 	var payload struct {
@@ -184,7 +184,7 @@ func (s *Server) transitionJob(w http.ResponseWriter, r *http.Request) {
 func (s *Server) addJobPart(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "job not found")
+		notFound(w, "job")
 		return
 	}
 	var payload struct {
@@ -206,7 +206,7 @@ func (s *Server) addJobPart(w http.ResponseWriter, r *http.Request) {
 func (s *Server) removeJobPart(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "job part not found")
+		notFound(w, "job part")
 		return
 	}
 	if err := s.store.RemoveJobPart(id); err != nil {
@@ -219,7 +219,7 @@ func (s *Server) removeJobPart(w http.ResponseWriter, r *http.Request) {
 func (s *Server) invoiceJob(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "job not found")
+		notFound(w, "job")
 		return
 	}
 	record, err := s.store.CreateInvoiceRecord(id)

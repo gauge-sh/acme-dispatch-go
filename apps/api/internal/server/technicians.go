@@ -56,7 +56,7 @@ func (s *Server) createTechnician(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getTechnician(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "technician not found")
+		notFound(w, "technician")
 		return
 	}
 	tech, err := s.store.TechnicianByID(id)
@@ -70,7 +70,7 @@ func (s *Server) getTechnician(w http.ResponseWriter, r *http.Request) {
 func (s *Server) patchTechnician(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "technician not found")
+		notFound(w, "technician")
 		return
 	}
 	tech, err := s.store.TechnicianByID(id)
@@ -98,7 +98,7 @@ func (s *Server) patchTechnician(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deleteTechnician(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "technician not found")
+		notFound(w, "technician")
 		return
 	}
 	if err := s.store.DeleteTechnician(id); err != nil {

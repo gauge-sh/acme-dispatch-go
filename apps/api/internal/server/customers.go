@@ -52,7 +52,7 @@ func (s *Server) createCustomer(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getCustomer(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "customer not found")
+		notFound(w, "customer")
 		return
 	}
 	customer, err := s.store.CustomerByID(id)
@@ -66,7 +66,7 @@ func (s *Server) getCustomer(w http.ResponseWriter, r *http.Request) {
 func (s *Server) patchCustomer(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "customer not found")
+		notFound(w, "customer")
 		return
 	}
 	customer, err := s.store.CustomerByID(id)
@@ -94,7 +94,7 @@ func (s *Server) patchCustomer(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deleteCustomer(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "customer not found")
+		notFound(w, "customer")
 		return
 	}
 	if err := s.store.DeleteCustomer(id); err != nil {

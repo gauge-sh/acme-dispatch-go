@@ -54,7 +54,7 @@ func (s *Server) createUser(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getUser(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "user not found")
+		notFound(w, "user")
 		return
 	}
 	user, err := s.store.UserByID(id)
@@ -68,7 +68,7 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) {
 func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "user not found")
+		notFound(w, "user")
 		return
 	}
 	user, err := s.store.UserByID(id)
@@ -102,7 +102,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "user not found")
+		notFound(w, "user")
 		return
 	}
 	if err := s.store.DeleteUser(id); err != nil {

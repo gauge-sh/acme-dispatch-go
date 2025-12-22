@@ -70,7 +70,7 @@ func (s *Server) createAppointment(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getAppointment(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "appointment not found")
+		notFound(w, "appointment")
 		return
 	}
 	appointment, err := s.store.AppointmentByID(id)
@@ -84,7 +84,7 @@ func (s *Server) getAppointment(w http.ResponseWriter, r *http.Request) {
 func (s *Server) patchAppointment(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "appointment not found")
+		notFound(w, "appointment")
 		return
 	}
 	appointment, err := s.store.AppointmentByID(id)
@@ -112,7 +112,7 @@ func (s *Server) patchAppointment(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deleteAppointment(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
-		writeErrorCode(w, http.StatusNotFound, "not_found", "appointment not found")
+		notFound(w, "appointment")
 		return
 	}
 	if err := s.store.DeleteAppointment(id); err != nil {
