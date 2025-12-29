@@ -35,7 +35,7 @@ func (a *App) dashboard(w http.ResponseWriter, r *http.Request) {
 	for _, status := range core.JobStatuses {
 		jobs, _, err := a.store.ListJobs(
 			store.JobFilter{Statuses: []core.JobStatus{status}},
-			store.Page{Number: 1, Size: 10})
+			store.Page{Number: 1, Size: 6})
 		if err != nil {
 			a.serverError(w, err)
 			return
