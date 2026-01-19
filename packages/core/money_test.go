@@ -1,6 +1,9 @@
 package core
 
-import "testing"
+import (
+	"math/big"
+	"testing"
+)
 
 func TestDivRound(t *testing.T) {
 	cases := []struct {
@@ -25,4 +28,37 @@ func TestDivRound(t *testing.T) {
 			t.Errorf("divRound(%d, %d) = %d, want %d", c.n, c.d, got, c.want)
 		}
 	}
+}
+
+func TestDivRoundAgainstBigRat(t *testing.T) {
+	// Cross-check the integer helper against exact rational arithmetic for
+	// every denominator the pricing engine uses.
+	denominators := []int64{36000, 20, 10, 3600}
+	numerators := []int64{0, 1, 17, 999, 26664, 26665, 95990400, 254067, -254067, -26665}
+	for _, d := range denominators {
+		for _, n := range numerators {
+			want := ratRound(n, d)
+			if got := divRound(n, d); got != want {
+				t.Errorf("divRound(%d, %d) = %d, big.Rat says %d", n, d, got, want)
+			}
+		}
+	}
+}
+
+// ratRound is the reference implementation: exact rational, half away from
+// zero, no floats.
+func ratRound(n, d int64) int64 {
+	value := big.NewRat(n, d)
+	doubled := new(big.Rat).Add(value, value)
+	floor := new(big.Int).Quo(doubled.Num(), doubled.Denom()) // truncates toward zero
+	half := floor.Int64()
+	rounded := half / 2
+	if half%2 != 0 {
+		if half > 0 {
+			rounded++
+		} else {
+			rounded--
+		}
+	}
+	return rounded
 }
