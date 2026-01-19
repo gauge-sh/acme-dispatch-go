@@ -3,7 +3,7 @@
 <div class="page-head">
   <h1>Jobs</h1>
   <form method="get" action="/jobs">
-    <input type="search" name="q" value="{{.Data.Query}}" placeholder="Title">
+    <input type="search" name="q" value="{{.Data.Query}}" placeholder="Title" autofocus>
     <select name="status">
       <option value="">Any status</option>
       {{$selected := .Data.Status}}
