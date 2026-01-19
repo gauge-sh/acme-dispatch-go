@@ -87,3 +87,19 @@ func TestSeedShapeAndDeterminism(t *testing.T) {
 		}
 	}
 }
+
+func TestSeedKeepsInactiveTechOffNewWork(t *testing.T) {
+	s := testStore(t)
+	if err := s.Seed(); err != nil {
+		t.Fatal(err)
+	}
+	inactive := false
+	techs, _, err := s.ListTechnicians(TechnicianFilter{Active: &inactive}, Page{})
+	if err != nil || len(techs) != 1 {
+		t.Fatalf("expected one inactive technician: %v %v", techs, err)
+	}
+	_, total, err := s.ListAppointments(AppointmentFilter{TechnicianID: &techs[0].ID}, Page{})
+	if err != nil || total != 0 {
+		t.Fatalf("inactive tech has %d appointments", total)
+	}
+}
