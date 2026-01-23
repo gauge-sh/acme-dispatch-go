@@ -115,6 +115,12 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) logout(w http.ResponseWriter, r *http.Request) {
-	a.clearSession(w, r)
+	session, _ := a.sessions.Get(r, sessionName)
+	delete(session.Values, "user_id")
+	session.AddFlash("Signed out.")
+	if err := session.Save(r, w); err != nil {
+		a.serverError(w, err)
+		return
+	}
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

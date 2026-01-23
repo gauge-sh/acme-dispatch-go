@@ -113,8 +113,8 @@ func TestLoginFlow(t *testing.T) {
 	mustContain(t, body, "Dashboard")
 
 	// Sign out and confirm the door is shut again.
-	resp = app.postForm("/logout", url.Values{})
-	resp.Body.Close()
+	resp, body = app.postAndRead("/logout", url.Values{})
+	mustContain(t, body, "Signed out.")
 	resp, _ = app.get("/")
 	if resp.Request.URL.Path != "/login" {
 		t.Fatalf("logout did not clear the session: %s", resp.Request.URL.Path)
