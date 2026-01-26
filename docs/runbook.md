@@ -26,7 +26,13 @@ the only time it appears).
 
 ```
 curl -H "Authorization: Bearer <token>" localhost:4400/api/v1/jobs
+curl -H "Authorization: Bearer <token>" "localhost:4400/api/v1/jobs?status=completed&per_page=50"
+curl -H "Authorization: Bearer <token>" -X POST localhost:4400/api/v1/jobs/12/invoice
 ```
+
+Lists take `?page` (1-based) and `?per_page` (default 20, max 100) and reply
+with `{"items", "page", "per_page", "total"}`. Errors always look like
+`{"error": {"code": "schedule_conflict", "message": "..."}}`.
 
 ## Day to day
 
