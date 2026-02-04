@@ -353,3 +353,30 @@ func TestCrossSitePostsRefused(t *testing.T) {
 		t.Fatalf("same-origin post got %d", resp.StatusCode)
 	}
 }
+
+func TestLoginReturnsToRequestedPage(t *testing.T) {
+	app := newTestApp(t)
+	resp, body := app.get("/parts")
+	if got := resp.Request.URL.Query().Get("next"); got != "/parts" {
+		t.Fatalf("next param: %q", got)
+	}
+	mustContain(t, body, `name="next" value="/parts"`)
+
+	resp = app.postForm("/login", url.Values{
+		"email": {"staff@test.example"}, "password": {"staff-password"}, "next": {"/parts"},
+	})
+	defer resp.Body.Close()
+	if resp.Request.URL.Path != "/parts" {
+		t.Fatalf("landed on %s", resp.Request.URL.Path)
+	}
+
+	// Absolute URLs never pass through.
+	app2 := newTestApp(t)
+	resp = app2.postForm("/login", url.Values{
+		"email": {"staff@test.example"}, "password": {"staff-password"}, "next": {"https://evil.example/"},
+	})
+	defer resp.Body.Close()
+	if resp.Request.URL.Path != "/" {
+		t.Fatalf("open redirect: %s", resp.Request.URL)
+	}
+}

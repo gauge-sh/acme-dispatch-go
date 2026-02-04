@@ -4,6 +4,7 @@
   <h1>Acme Dispatch</h1>
   {{with .Data.Error}}<div class="error-banner">{{.}}</div>{{end}}
   <form method="post" action="/login">
+    <input type="hidden" name="next" value="{{.Data.Next}}">
     <label>Email
       <input type="email" name="email" value="{{.Data.Email}}" autofocus required>
     </label>

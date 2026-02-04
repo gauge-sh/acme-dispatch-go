@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/acme-dispatch/dispatch/core"
 )
@@ -25,7 +27,7 @@ func (a *App) auth(next http.HandlerFunc) http.HandlerFunc {
 		session, _ := a.sessions.Get(r, sessionName)
 		userID, ok := session.Values["user_id"].(int64)
 		if !ok {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, "/login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusSeeOther)
 			return
 		}
 		user, err := a.store.UserByID(userID)
@@ -80,6 +82,16 @@ func (a *App) popFlash(w http.ResponseWriter, r *http.Request) string {
 type loginPage struct {
 	Email string
 	Error string
+	Next  string
+}
+
+// safeNext only follows local paths, never absolute URLs someone pasted
+// into a link.
+func safeNext(raw string) string {
+	if strings.HasPrefix(raw, "/") && !strings.HasPrefix(raw, "//") {
+		return raw
+	}
+	return "/"
 }
 
 func (a *App) loginForm(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +99,7 @@ func (a *App) loginForm(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	a.render(w, r, http.StatusOK, "login", loginPage{})
+	a.render(w, r, http.StatusOK, "login", loginPage{Next: r.URL.Query().Get("next")})
 }
 
 func (a *App) login(w http.ResponseWriter, r *http.Request) {
@@ -102,6 +114,7 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 		a.render(w, r, http.StatusUnprocessableEntity, "login", loginPage{
 			Email: email,
 			Error: "invalid email or password",
+			Next:  r.FormValue("next"),
 		})
 		return
 	}
@@ -111,7 +124,7 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, err)
 		return
 	}
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, safeNext(r.FormValue("next")), http.StatusSeeOther)
 }
 
 func (a *App) logout(w http.ResponseWriter, r *http.Request) {
