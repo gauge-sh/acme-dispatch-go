@@ -75,3 +75,19 @@ func TestContentTypeAndMalformedBody(t *testing.T) {
 	raw := api.do("POST", "/api/v1/customers", api.staff, "just a string")
 	api.mustError(raw, http.StatusBadRequest, "validation_failed", "invalid request body")
 }
+
+func TestBearerPrefixIsExact(t *testing.T) {
+	api := newTestAPI(t)
+	for _, header := range []string{
+		"bearer " + api.staff, // lower-case scheme
+		"Token " + api.staff,
+		api.staff, // bare token
+		"Bearer",
+		"Bearer ",
+	} {
+		rec := api.doWithAuthHeader("GET", "/api/v1/jobs", header)
+		if rec.Code != http.StatusUnauthorized {
+			t.Errorf("header %q got %d", header, rec.Code)
+		}
+	}
+}

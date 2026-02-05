@@ -72,6 +72,17 @@ func (a *testAPI) do(method, path, token string, body any) *httptest.ResponseRec
 	return rec
 }
 
+func (a *testAPI) doWithAuthHeader(method, path, header string) *httptest.ResponseRecorder {
+	a.t.Helper()
+	req := httptest.NewRequest(method, path, nil)
+	if header != "" {
+		req.Header.Set("Authorization", header)
+	}
+	rec := httptest.NewRecorder()
+	a.handler.ServeHTTP(rec, req)
+	return rec
+}
+
 func (a *testAPI) mustStatus(rec *httptest.ResponseRecorder, want int) {
 	a.t.Helper()
 	if rec.Code != want {
