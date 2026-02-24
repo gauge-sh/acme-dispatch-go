@@ -121,3 +121,23 @@ func TestUserPasswordChangeOverAPI(t *testing.T) {
 		t.Fatal("old password still works")
 	}
 }
+
+func TestTechnicianCombinedFilters(t *testing.T) {
+	api := newTestAPI(t)
+	api.createTechnician("Dana", 8000) // hvac, from the harness helper
+	plumber := api.createTechnician("Iris", 7200)
+	rec := api.do("PATCH", jsonPath("/api/v1/technicians/%v", plumber["id"]), api.staff, map[string]any{
+		"skill_tags": []string{"plumbing"}, "is_active": false,
+	})
+	api.mustStatus(rec, http.StatusOK)
+
+	rec = api.do("GET", "/api/v1/technicians?skill=plumbing&is_active=false", api.staff, nil)
+	list := decodeBody[listBody[map[string]any]](t, rec)
+	if list.Total != 1 || list.Items[0]["name"] != "Iris" {
+		t.Fatalf("combined filter: %+v", list)
+	}
+	rec = api.do("GET", "/api/v1/technicians?skill=plumbing&is_active=true", api.staff, nil)
+	if list := decodeBody[listBody[map[string]any]](t, rec); list.Total != 0 {
+		t.Fatalf("no active plumbers expected: %+v", list)
+	}
+}
