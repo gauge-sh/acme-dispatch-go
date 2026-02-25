@@ -92,3 +92,27 @@ func TestDeleteCustomerWithJobs(t *testing.T) {
 		t.Fatalf("expected guard, got %v", err)
 	}
 }
+
+func TestJobStatusCounts(t *testing.T) {
+	s := testStore(t)
+	c := seedCustomer(t, s)
+	seedJob(t, s, c.ID, "One")
+	seedJob(t, s, c.ID, "Two")
+	job := seedJob(t, s, c.ID, "Three")
+	if _, err := s.TransitionJob(job.ID, core.StatusCancelled); err != nil {
+		t.Fatal(err)
+	}
+
+	counts, err := s.JobStatusCounts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if counts[core.StatusRequested] != 2 || counts[core.StatusCancelled] != 1 {
+		t.Fatalf("counts: %v", counts)
+	}
+	// Every status is present, zero or not, so the dashboard never misses a
+	// column.
+	if len(counts) != len(core.JobStatuses) {
+		t.Fatalf("missing statuses: %v", counts)
+	}
+}

@@ -218,3 +218,21 @@ func TestJobPartCapturesPriceAtUse(t *testing.T) {
 		t.Fatalf("price restated after part update: %d", fresh.UnitPriceCents)
 	}
 }
+
+func TestAdjustmentPagination(t *testing.T) {
+	s := testStore(t)
+	p := seedPart(t, s, "FLT-16", 0)
+	for i := int64(1); i <= 25; i++ {
+		if _, err := s.AdjustStockLevel(p.ID, i, nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	entries, total, err := s.ListStockAdjustments(&p.ID, Page{Number: 2, Size: 10})
+	if err != nil || total != 25 || len(entries) != 10 {
+		t.Fatalf("page 2: total=%d len=%d err=%v", total, len(entries), err)
+	}
+	// Newest first, so page 2 starts at delta 15.
+	if entries[0].Delta != 15 {
+		t.Fatalf("page 2 head: %+v", entries[0])
+	}
+}
