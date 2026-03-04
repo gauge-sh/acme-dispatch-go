@@ -15,6 +15,7 @@
   <div class="cell"><div class="label">Skills</div>{{if .Data.Technician.SkillTags}}{{join .Data.Technician.SkillTags ", "}}{{else}}—{{end}}</div>
   <div class="cell"><div class="label">Phone</div>{{with .Data.Technician.Phone}}{{.}}{{else}}—{{end}}</div>
   <div class="cell"><div class="label">Hourly cost</div>{{money .Data.Technician.HourlyCostCents}}</div>
+  <div class="cell"><div class="label">Scheduled visits</div>{{len .Data.Schedule}}</div>
 </div>
 <h2>Schedule</h2>
 {{if .Data.Schedule}}
