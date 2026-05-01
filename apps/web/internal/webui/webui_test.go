@@ -380,3 +380,45 @@ func TestLoginReturnsToRequestedPage(t *testing.T) {
 		t.Fatalf("open redirect: %s", resp.Request.URL)
 	}
 }
+
+func TestUserAdminForms(t *testing.T) {
+	app := newTestApp(t)
+	app.login("admin@test.example", "admin-password")
+
+	resp, body := app.postAndRead("/users", url.Values{
+		"email": {"new.person@test.example"}, "name": {"New Person"},
+		"role": {"dispatcher"}, "password": {"a-long-password"}, "is_active": {"on"},
+	})
+	if !strings.HasPrefix(resp.Request.URL.Path, "/users/") {
+		t.Fatalf("create landed on %s: %s", resp.Request.URL.Path, body)
+	}
+	mustContain(t, body, "User created.")
+	userPath := resp.Request.URL.Path
+
+	// A short password re-renders the form.
+	resp, body = app.postAndRead("/users", url.Values{
+		"email": {"short@test.example"}, "name": {"Shorty"}, "role": {"dispatcher"}, "password": {"nope"},
+	})
+	if resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("short password: %d", resp.StatusCode)
+	}
+	mustContain(t, body, "must be at least 8 characters")
+
+	// Promote through the edit form.
+	resp, body = app.postAndRead(userPath, url.Values{
+		"email": {"new.person@test.example"}, "name": {"New Person"},
+		"role": {"admin"}, "is_active": {"on"},
+	})
+	mustContain(t, body, "User updated.")
+	mustContain(t, body, "admin")
+
+	// And the new admin can actually sign in.
+	resp = app.postForm("/logout", url.Values{})
+	resp.Body.Close()
+	resp, _ = app.postAndRead("/login", url.Values{
+		"email": {"new.person@test.example"}, "password": {"a-long-password"},
+	})
+	if resp.Request.URL.Path != "/" {
+		t.Fatalf("new user cannot sign in: %s", resp.Request.URL.Path)
+	}
+}
