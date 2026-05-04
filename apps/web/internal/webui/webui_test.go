@@ -422,3 +422,32 @@ func TestUserAdminForms(t *testing.T) {
 		t.Fatalf("new user cannot sign in: %s", resp.Request.URL.Path)
 	}
 }
+
+func TestStockAdjustForms(t *testing.T) {
+	app := newTestApp(t)
+	app.login("staff@test.example", "staff-password")
+
+	part := core.Part{SKU: "FLT-16", Name: "Filter", UnitCostCents: 450, UnitPriceCents: 899}
+	if err := app.store.CreatePart(&part); err != nil {
+		t.Fatal(err)
+	}
+	partPath := "/parts/" + strconv.FormatInt(part.ID, 10)
+
+	_, body := app.get(partPath)
+	mustContain(t, body, "No stock movement recorded yet")
+
+	_, body = app.postAndRead(partPath+"/stock", url.Values{
+		"delta": {"12"}, "reason": {"received PO 118"},
+	})
+	mustContain(t, body, "Stock adjusted.")
+	mustContain(t, body, "received PO 118")
+	mustContain(t, body, "+12")
+
+	// Draining below zero is refused and nothing is written.
+	_, body = app.postAndRead(partPath+"/stock", url.Values{"delta": {"-20"}})
+	mustContain(t, body, "not enough stock on hand")
+	level, _ := app.store.StockLevelForPart(part.ID)
+	if level.QuantityOnHand != 12 {
+		t.Fatalf("failed adjustment moved stock: %d", level.QuantityOnHand)
+	}
+}
