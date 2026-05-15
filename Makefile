@@ -2,7 +2,7 @@ GO      ?= go
 DB      ?= dispatch.db
 PKGS    := ./packages/core/... ./apps/api/... ./apps/web/...
 
-.PHONY: build test lint fmt seed web api clean
+.PHONY: build test lint fmt check seed web api clean
 
 build:
 	$(GO) build $(PKGS)
@@ -16,6 +16,8 @@ lint:
 
 fmt:
 	gofmt -w apps packages
+
+check: lint test
 
 seed:
 	$(GO) run ./apps/web -db $(DB) -seed
