@@ -135,3 +135,28 @@ func TestInvoiceListAndGet(t *testing.T) {
 	rec = api.do("GET", "/api/v1/invoice-records/999", api.staff, nil)
 	api.mustError(rec, http.StatusNotFound, "not_found", "invoice record not found")
 }
+
+func TestWeekendLineOverAPI(t *testing.T) {
+	api := newTestAPI(t)
+	customer := api.createCustomer("Weekend Work Co")
+	tech := api.createTechnician("Yuki", 5000)
+	job := api.createJob(customer["id"], "Saturday call-out", "")
+
+	// 2025-03-15 is a Saturday.
+	api.createAppointment(job["id"], tech["id"], "2025-03-15T09:00:00Z", "2025-03-15T11:00:00Z")
+	for _, status := range []string{"scheduled", "in_progress", "completed"} {
+		api.mustStatus(api.transition(job["id"], status), http.StatusOK)
+	}
+
+	rec := api.do("POST", jsonPath("/api/v1/jobs/%v/invoice", job["id"]), api.staff, nil)
+	api.mustStatus(rec, http.StatusCreated)
+	invoice := decodeBody[map[string]any](t, rec)
+	// 2h × 5000 × 1.6 = 16000, ×1.15 = 18400: fixture case 2.
+	if invoice["total_cents"] != float64(18400) {
+		t.Fatalf("saturday total: %v", invoice["total_cents"])
+	}
+	line := invoice["line_items"].([]any)[0].(map[string]any)
+	if line["weekend"] != true || line["amount_cents"] != float64(18400) {
+		t.Fatalf("weekend line: %v", line)
+	}
+}
