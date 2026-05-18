@@ -236,3 +236,31 @@ func TestAdjustmentPagination(t *testing.T) {
 		t.Fatalf("page 2 head: %+v", entries[0])
 	}
 }
+
+func TestRemoveJobPartEdges(t *testing.T) {
+	s := testStore(t)
+	err := s.RemoveJobPart(999)
+	var derr *core.Error
+	if !errors.As(err, &derr) || derr.Code != core.CodeNotFound {
+		t.Fatalf("missing job part: %v", err)
+	}
+
+	c := seedCustomer(t, s)
+	job := seedJob(t, s, c.ID, "Fix furnace")
+	p := seedPart(t, s, "IGN-4420", 5)
+	jp, err := s.AddJobPart(job.ID, p.ID, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RemoveJobPart(jp.ID); err != nil {
+		t.Fatal(err)
+	}
+	// The second removal finds nothing and moves no stock.
+	if err := s.RemoveJobPart(jp.ID); !errors.As(err, &derr) || derr.Code != core.CodeNotFound {
+		t.Fatalf("double removal: %v", err)
+	}
+	level, _ := s.StockLevelForPart(p.ID)
+	if level.QuantityOnHand != 5 {
+		t.Fatalf("stock drifted: %d", level.QuantityOnHand)
+	}
+}
