@@ -99,3 +99,19 @@ func TestIsWeekendUsesUTC(t *testing.T) {
 		}
 	}
 }
+
+func TestOverlapIsSymmetric(t *testing.T) {
+	windows := []Booking{
+		{TechnicianID: 1, Start: at(9, 0), End: at(10, 0)},
+		{TechnicianID: 1, Start: at(9, 30), End: at(10, 30)},
+		{TechnicianID: 1, Start: at(10, 0), End: at(11, 0)},
+		{TechnicianID: 1, Start: at(8, 0), End: at(12, 0)},
+	}
+	for _, a := range windows {
+		for _, b := range windows {
+			if Overlaps(a, b) != Overlaps(b, a) {
+				t.Fatalf("asymmetric overlap: %v vs %v", a, b)
+			}
+		}
+	}
+}
