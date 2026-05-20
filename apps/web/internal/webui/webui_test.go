@@ -451,3 +451,23 @@ func TestStockAdjustForms(t *testing.T) {
 		t.Fatalf("failed adjustment moved stock: %d", level.QuantityOnHand)
 	}
 }
+
+func TestDashboardEmptyState(t *testing.T) {
+	app := newTestApp(t)
+	app.login("staff@test.example", "staff-password")
+	_, body := app.get("/")
+	mustContain(t, body, "Nothing here.")
+	mustContain(t, body, "Requested")
+	mustContain(t, body, "Cancelled")
+}
+
+func TestMissingPagesAre404(t *testing.T) {
+	app := newTestApp(t)
+	app.login("staff@test.example", "staff-password")
+	for _, path := range []string{"/jobs/999", "/customers/999", "/technicians/999", "/parts/999", "/invoices/999"} {
+		resp, _ := app.get(path)
+		if resp.StatusCode != http.StatusNotFound {
+			t.Errorf("%s: %d", path, resp.StatusCode)
+		}
+	}
+}
