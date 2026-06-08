@@ -58,6 +58,8 @@ table { width: 100%; border-collapse: collapse; background: #fff; border: 1px so
 th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); }
 th { background: #eef1f5; font-weight: 600; font-size: 0.85rem; }
 tr:last-child td { border-bottom: none; }
+tbody tr:hover td, table tr:hover td { background: #f4f7fb; }
+table tr:first-child:hover th { background: #eef1f5; }
 td.num, th.num { text-align: right; }
 
 a { color: var(--accent); }
@@ -74,6 +76,10 @@ a { color: var(--accent); }
   text-decoration: none;
 }
 .button:hover, button:hover { background: var(--accent-dark); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 .button.subtle, button.subtle { background: #fff; color: var(--ink); border-color: var(--line); }
 .button.danger, button.danger { background: #fff; color: var(--danger); border-color: var(--danger); }
 
