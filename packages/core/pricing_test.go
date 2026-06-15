@@ -154,6 +154,10 @@ func TestFormatHours(t *testing.T) {
 		{18 * time.Minute, "0.3"},
 		{40 * time.Minute, "0.67"},
 		{45 * time.Second, "0.01"},
+		{27 * time.Minute, "0.45"},
+		{29*time.Minute + 24*time.Second, "0.49"},
+		{29*time.Minute + 42*time.Second, "0.5"}, // 0.495 rounds half away
+
 		{10 * time.Second, "0"}, // below label granularity; amount still exact
 		{25 * time.Hour, "25"},
 	}
