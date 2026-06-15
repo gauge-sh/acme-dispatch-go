@@ -36,6 +36,9 @@ make test    # all three modules, offline, file-backed SQLite
 make lint    # gofmt + go vet
 ```
 
+`DISPATCH_DB` points both binaries at a different SQLite file; set
+`SESSION_SECRET` before exposing the web app beyond your own machine.
+
 Longer version in `docs/runbook.md`. `docs/architecture.md` explains where
 the boundaries are and why; `docs/pricing.md` walks the billing math;
 `docs/domain.md` is the behavioral contract the code implements.
