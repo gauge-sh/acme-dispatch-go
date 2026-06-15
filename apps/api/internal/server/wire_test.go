@@ -141,3 +141,15 @@ func TestTechnicianCombinedFilters(t *testing.T) {
 		t.Fatalf("no active plumbers expected: %+v", list)
 	}
 }
+
+func TestJobsPageBeyondEnd(t *testing.T) {
+	api := newTestAPI(t)
+	customer := api.createCustomer("Harbor Coffee")
+	api.createJob(customer["id"], "Only job", "")
+
+	rec := api.do("GET", "/api/v1/jobs?page=40&per_page=100", api.staff, nil)
+	list := decodeBody[listBody[map[string]any]](t, rec)
+	if len(list.Items) != 0 || list.Total != 1 || list.Page != 40 {
+		t.Fatalf("past the end: %+v", list)
+	}
+}
