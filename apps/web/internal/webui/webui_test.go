@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/acme-dispatch/dispatch/core"
 	"github.com/acme-dispatch/dispatch/core/store"
@@ -470,4 +471,36 @@ func TestMissingPagesAre404(t *testing.T) {
 			t.Errorf("%s: %d", path, resp.StatusCode)
 		}
 	}
+}
+
+func TestAppointmentEditPrefills(t *testing.T) {
+	app := newTestApp(t)
+	app.login("staff@test.example", "staff-password")
+
+	customer := core.Customer{Name: "Harbor Coffee", ServiceAddress: "12 Pier Rd"}
+	if err := app.store.CreateCustomer(&customer); err != nil {
+		t.Fatal(err)
+	}
+	job := core.Job{CustomerID: customer.ID, Title: "Fix furnace"}
+	if err := app.store.CreateJob(&job); err != nil {
+		t.Fatal(err)
+	}
+	tech := core.Technician{Name: "Dana", HourlyCostCents: 8000, IsActive: true}
+	if err := app.store.CreateTechnician(&tech); err != nil {
+		t.Fatal(err)
+	}
+	appt := core.Appointment{
+		JobID:          job.ID,
+		TechnicianID:   tech.ID,
+		ScheduledStart: core.NewTime(time.Date(2025, 3, 12, 13, 0, 0, 0, time.UTC)),
+		ScheduledEnd:   core.NewTime(time.Date(2025, 3, 12, 14, 30, 0, 0, time.UTC)),
+	}
+	if err := app.store.CreateAppointment(&appt); err != nil {
+		t.Fatal(err)
+	}
+
+	_, body := app.get("/appointments/" + strconv.FormatInt(appt.ID, 10) + "/edit")
+	mustContain(t, body, `value="2025-03-12T13:00"`)
+	mustContain(t, body, `value="2025-03-12T14:30"`)
+	mustContain(t, body, "Fix furnace")
 }
