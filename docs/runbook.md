@@ -68,7 +68,9 @@ totals and ids come out identical every time.
 
 ## Tests
 
-Each module carries its own tests: domain rules and pricing conformance in
+The whole suite is offline by design: no network, no external services, just
+temp-file SQLite. A full `make test` lands in well under a minute on a
+laptop. Each module carries its own tests: domain rules and pricing conformance in
 `packages/core`, HTTP integration in `apps/api`, browser-level smoke tests in
 `apps/web`. Every test opens its own temp-file database, so they run in
 parallel and leave nothing behind.
