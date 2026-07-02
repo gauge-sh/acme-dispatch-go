@@ -115,6 +115,9 @@ func TestInvoiceListAndGet(t *testing.T) {
 	if list.Total != 2 {
 		t.Fatalf("total: %+v", list)
 	}
+	if list.Items[0]["id"].(float64) >= list.Items[1]["id"].(float64) {
+		t.Fatalf("invoice ordering: %v", list.Items)
+	}
 	if _, ok := list.Items[0]["line_items"].([]any); !ok {
 		t.Fatalf("list items include line_items: %v", list.Items[0])
 	}
