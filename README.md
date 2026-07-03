@@ -7,6 +7,8 @@ record is a record, not a payment.
 
 ## Quickstart
 
+Requires Go 1.27 or newer; everything else is in the module cache.
+
 ```
 git clone <this repo> && cd acme-dispatch-go
 make seed
