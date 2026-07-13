@@ -74,6 +74,23 @@ func (s *Store) JobPartByID(id int64) (*core.JobPart, error) {
 	return &jp, nil
 }
 
+// restockJobPart returns a job part's quantity to stock and records the
+// adjustment, without touching the job_parts row itself. Shared by removing
+// a single job part and by deleting a job outright, so the two paths always
+// move stock the same way.
+func (s *Store) restockJobPart(jp core.JobPart) error {
+	level, err := s.StockLevelForPart(jp.PartID)
+	if err != nil {
+		return err
+	}
+	after, err := core.ReleaseStock(level.QuantityOnHand, jp.Quantity)
+	if err != nil {
+		return err
+	}
+	reason := fmt.Sprintf("returned from job %d", jp.JobID)
+	return s.writeStockChange(level, after, jp.Quantity, &reason)
+}
+
 // RemoveJobPart puts the quantity back on the shelf in the same transaction.
 func (s *Store) RemoveJobPart(id int64) error {
 	return s.InTx(func(tx *Store) error {
@@ -88,16 +105,7 @@ func (s *Store) RemoveJobPart(id int64) error {
 		if job.Status == core.StatusInvoiced {
 			return core.Invalid("an invoiced job cannot be changed")
 		}
-		level, err := tx.StockLevelForPart(jp.PartID)
-		if err != nil {
-			return err
-		}
-		after, err := core.ReleaseStock(level.QuantityOnHand, jp.Quantity)
-		if err != nil {
-			return err
-		}
-		reason := fmt.Sprintf("returned from job %d", jp.JobID)
-		if err := tx.writeStockChange(level, after, jp.Quantity, &reason); err != nil {
+		if err := tx.restockJobPart(*jp); err != nil {
 			return err
 		}
 		_, err = tx.exec(`DELETE FROM job_parts WHERE id = ?`, id)

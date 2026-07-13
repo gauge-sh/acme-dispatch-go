@@ -116,3 +116,68 @@ func TestJobStatusCounts(t *testing.T) {
 		t.Fatalf("missing statuses: %v", counts)
 	}
 }
+
+func TestDeleteJobReturnsPartsToStock(t *testing.T) {
+	s := testStore(t)
+	c := seedCustomer(t, s)
+	job := seedJob(t, s, c.ID, "Fix furnace")
+	p := seedPart(t, s, "IGN-4420", 5)
+
+	if _, err := s.AddJobPart(job.ID, p.ID, 3); err != nil {
+		t.Fatal(err)
+	}
+	level, _ := s.StockLevelForPart(p.ID)
+	if level.QuantityOnHand != 2 {
+		t.Fatalf("stock after use: %d", level.QuantityOnHand)
+	}
+
+	// Deleting the job must be indistinguishable from deleting each of its
+	// job parts first: the stock comes all the way back.
+	if err := s.DeleteJob(job.ID); err != nil {
+		t.Fatal(err)
+	}
+	level, _ = s.StockLevelForPart(p.ID)
+	if level.QuantityOnHand != 5 {
+		t.Fatalf("stock after job delete: %d, want 5", level.QuantityOnHand)
+	}
+
+	// Three adjustments on record: the initial receiving, the consume when
+	// the part was used, and the restock from deleting the job — newest first.
+	entries, total, err := s.ListStockAdjustments(&p.ID, Page{})
+	if err != nil || total != 3 {
+		t.Fatalf("expected 3 adjustment entries, got %d: %v", total, err)
+	}
+	if entries[0].Delta != 3 || entries[0].Reason == nil {
+		t.Fatalf("restock entry: %+v", entries[0])
+	}
+	if entries[1].Delta != -3 {
+		t.Fatalf("consume entry: %+v", entries[1])
+	}
+}
+
+func TestDeleteJobWithMultiplePartsRestocksAll(t *testing.T) {
+	s := testStore(t)
+	c := seedCustomer(t, s)
+	job := seedJob(t, s, c.ID, "Fix furnace")
+	a := seedPart(t, s, "IGN-1", 10)
+	b := seedPart(t, s, "IGN-2", 10)
+
+	if _, err := s.AddJobPart(job.ID, a.ID, 4); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.AddJobPart(job.ID, b.ID, 6); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DeleteJob(job.ID); err != nil {
+		t.Fatal(err)
+	}
+	levelA, _ := s.StockLevelForPart(a.ID)
+	levelB, _ := s.StockLevelForPart(b.ID)
+	if levelA.QuantityOnHand != 10 || levelB.QuantityOnHand != 10 {
+		t.Fatalf("stock after delete: a=%d b=%d", levelA.QuantityOnHand, levelB.QuantityOnHand)
+	}
+	rows, err := s.JobPartsForJob(job.ID)
+	if err != nil || len(rows) != 0 {
+		t.Fatalf("job_parts should be gone with the job: %v %v", rows, err)
+	}
+}

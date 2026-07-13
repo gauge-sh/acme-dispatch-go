@@ -70,6 +70,9 @@ func (s *Store) UpdateJob(j *core.Job) error {
 	return nil
 }
 
+// DeleteJob returns whatever its job parts consumed back to stock before
+// removing the job — the same effect as deleting each job part first, so
+// erasing a job never leaves inventory short for work that no longer exists.
 func (s *Store) DeleteJob(id int64) error {
 	return s.InTx(func(tx *Store) error {
 		job, err := tx.JobByID(id)
@@ -78,6 +81,15 @@ func (s *Store) DeleteJob(id int64) error {
 		}
 		if job.Status == core.StatusInvoiced {
 			return core.Invalid("an invoiced job cannot be deleted")
+		}
+		parts, err := tx.JobPartsForJob(id)
+		if err != nil {
+			return err
+		}
+		for _, jp := range parts {
+			if err := tx.restockJobPart(jp); err != nil {
+				return err
+			}
 		}
 		_, err = tx.exec(`DELETE FROM jobs WHERE id = ?`, id)
 		return err

@@ -93,3 +93,40 @@ func TestJobPartsOverAPI(t *testing.T) {
 		t.Fatalf("stock after removal: %v", list.Items[0])
 	}
 }
+
+func TestDeleteJobOverAPIReturnsPartsToStock(t *testing.T) {
+	api := newTestAPI(t)
+	customer := api.createCustomer("Harbor Coffee")
+	part := api.createPart("IGN-1", 1299, 5)
+	job := api.createJob(customer["id"], "Fix furnace", "")
+
+	rec := api.do("POST", jsonPath("/api/v1/jobs/%v/parts", job["id"]), api.staff, map[string]any{
+		"part_id": part["id"], "quantity": 3,
+	})
+	api.mustStatus(rec, http.StatusCreated)
+
+	// Deleting the job must be indistinguishable from deleting the job part
+	// first: the stock comes all the way back.
+	rec = api.do("DELETE", jsonPath("/api/v1/jobs/%v", job["id"]), api.staff, nil)
+	api.mustStatus(rec, http.StatusNoContent)
+
+	rec = api.do("GET", jsonPath("/api/v1/stock-levels?part_id=%v", part["id"]), api.staff, nil)
+	list := decodeBody[listBody[map[string]any]](t, rec)
+	if list.Items[0]["quantity_on_hand"] != float64(5) {
+		t.Fatalf("stock after job delete: %v", list.Items[0])
+	}
+}
+
+func TestDeleteUsedPartMessage(t *testing.T) {
+	api := newTestAPI(t)
+	customer := api.createCustomer("Harbor Coffee")
+	part := api.createPart("IGN-1", 1299, 5)
+	job := api.createJob(customer["id"], "Fix furnace", "")
+	rec := api.do("POST", jsonPath("/api/v1/jobs/%v/parts", job["id"]), api.staff, map[string]any{
+		"part_id": part["id"], "quantity": 1,
+	})
+	api.mustStatus(rec, http.StatusCreated)
+
+	rec = api.do("DELETE", jsonPath("/api/v1/parts/%v", part["id"]), api.admin, nil)
+	api.mustError(rec, http.StatusBadRequest, "validation_failed", "part has been used on jobs and cannot be deleted")
+}

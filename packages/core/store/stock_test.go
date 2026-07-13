@@ -182,8 +182,8 @@ func TestDeletePartInUse(t *testing.T) {
 	}
 	err := s.DeletePart(p.ID)
 	var derr *core.Error
-	if !errors.As(err, &derr) || derr.Code != core.CodeValidationFailed {
-		t.Fatalf("expected guard, got %v", err)
+	if !errors.As(err, &derr) || derr.Message != "part has been used on jobs and cannot be deleted" {
+		t.Fatalf("expected the frozen wording, got %v", err)
 	}
 
 	unused := seedPart(t, s, "FLT-16", 0)

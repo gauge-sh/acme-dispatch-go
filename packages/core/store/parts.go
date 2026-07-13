@@ -82,7 +82,7 @@ func (s *Store) DeletePart(id int64) error {
 		return err
 	}
 	if used > 0 {
-		return core.Invalid("part is used on jobs and cannot be deleted")
+		return core.Invalid("part has been used on jobs and cannot be deleted")
 	}
 	res, err := s.exec(`DELETE FROM parts WHERE id = ?`, id)
 	if err != nil {
