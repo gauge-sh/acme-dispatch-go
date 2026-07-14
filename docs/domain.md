@@ -37,7 +37,11 @@ never returns a password field or hash.
 - Only an `admin` may create, update, or delete users, or issue API tokens.
 - A user may not change their own `role`, and may not deactivate themselves.
 - Deleting the last active admin is rejected with `validation_failed` /
-  `"cannot remove the last active admin"`.
+  `"cannot remove the last active admin"`. Demoting or deactivating the last
+  active admin causes the same lockout and is rejected with the same code and
+  message.
+- Deleting yourself is allowed over the API when you are not the last active
+  admin. The web UI refuses self-deletion outright.
 
 ## ApiToken
 
@@ -133,7 +137,10 @@ requested ──▶ scheduled ──▶ in_progress ──▶ completed ──�
 - Attaching an appointment to a `completed`, `invoiced`, or `cancelled` job is
   `validation_failed` /
   `"appointments cannot be added to a job that is <status>"`, where `<status>`
-  is the wire enum value.
+  is the wire enum value. "Attaching" means creating an appointment, or
+  re-pointing an existing one at another job — editing the times or
+  `completion_notes` of an appointment already on a closed job stays allowed,
+  because that is how completion notes get written after the work is done.
 - `hours` for pricing is `(scheduled_end - scheduled_start)` in hours as an exact
   decimal, not rounded to any granularity.
 
@@ -149,6 +156,11 @@ requested ──▶ scheduled ──▶ in_progress ──▶ completed ──�
 `unit_price_cents < unit_cost_cents` is `validation_failed` /
 `"unit price cannot be below unit cost"`. The rule is enforced on create and on
 update.
+
+Deleting a part that has been used on any job is rejected with
+`validation_failed` / `"part has been used on jobs and cannot be deleted"`;
+billing history must stay intact. An unused part deletes cleanly, taking its
+zero stock level with it.
 
 ## StockLevel
 
@@ -262,5 +274,13 @@ Appointment `completion_notes` do not affect pricing.
 Deterministic, from a fixed seed, in every repo: 2 users (one `admin`, one
 `dispatcher`), ~8 technicians, ~20 customers, ~40 jobs spread across all six
 statuses, ~25 parts with stock levels, job parts on the worked jobs, and invoice
-records for the `invoiced` jobs. The same seed must produce the same invoice
-totals in all five implementations.
+records for the `invoiced` jobs.
+
+Determinism is per repo: re-running the seed must reproduce the same rows and
+the same invoice totals every time. The dataset itself is each repo's own — the
+five are not required to seed identical customers or identical totals. Pricing
+agreement across implementations is proven by `pricing-cases.json`, which is
+byte-identical everywhere, not by the seeds.
+
+Seed durations should be whole or terminating fractions of an hour, so a labor
+line's `quantity` never depends on floating-point formatting.
