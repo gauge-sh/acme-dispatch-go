@@ -72,6 +72,58 @@ func TestJobDetailNestsRelations(t *testing.T) {
 	}
 }
 
+func TestJobDetailNestedOrderingTieBreak(t *testing.T) {
+	api := newTestAPI(t)
+	customer := api.createCustomer("Harbor Coffee")
+	techA := api.createTechnician("Alex", 8000)
+	techB := api.createTechnician("Bailey", 7500)
+	partA := api.createPart("AAA-1", 899, 10)
+	partB := api.createPart("BBB-2", 1299, 10)
+	job := api.createJob(customer["id"], "Fix furnace", "")
+
+	// Two appointments share a start time; different technicians so there is
+	// no schedule conflict. Create the later-id one first to prove the
+	// ordering isn't just insertion order.
+	second := api.createAppointment(job["id"], techB["id"], "2025-03-12T09:00:00Z", "2025-03-12T10:00:00Z")
+	first := api.createAppointment(job["id"], techA["id"], "2025-03-12T09:00:00Z", "2025-03-12T10:30:00Z")
+	if first["id"].(float64) <= second["id"].(float64) {
+		t.Fatalf("expected first to have the higher id: %v vs %v", first["id"], second["id"])
+	}
+
+	// job_parts have no shared key to tie-break on; ordering is purely id
+	// ascending, i.e. creation order. Add part B before part A so the
+	// assertion below can't pass by coincidentally matching alphabetical or
+	// part-id order.
+	jpB := decodeBody[map[string]any](t, api.do("POST", jsonPath("/api/v1/jobs/%v/parts", job["id"]), api.staff, map[string]any{
+		"part_id": partB["id"], "quantity": 1,
+	}))
+	jpA := decodeBody[map[string]any](t, api.do("POST", jsonPath("/api/v1/jobs/%v/parts", job["id"]), api.staff, map[string]any{
+		"part_id": partA["id"], "quantity": 1,
+	}))
+
+	rec := api.do("GET", jsonPath("/api/v1/jobs/%v", job["id"]), api.staff, nil)
+	api.mustStatus(rec, http.StatusOK)
+	detail := decodeBody[map[string]any](t, rec)
+
+	appointments := detail["appointments"].([]any)
+	if len(appointments) != 2 {
+		t.Fatalf("expected 2 appointments: %v", appointments)
+	}
+	// Same scheduled_start on both: the tie-break is appointment id
+	// ascending, so the second-created appointment (lower id) comes first.
+	if appointments[0].(map[string]any)["id"] != second["id"] || appointments[1].(map[string]any)["id"] != first["id"] {
+		t.Fatalf("appointment tie-break order: %v", appointments)
+	}
+
+	jobParts := detail["job_parts"].([]any)
+	if len(jobParts) != 2 {
+		t.Fatalf("expected 2 job parts: %v", jobParts)
+	}
+	if jobParts[0].(map[string]any)["id"] != jpB["id"] || jobParts[1].(map[string]any)["id"] != jpA["id"] {
+		t.Fatalf("job_parts ordering should be id ascending (creation order): %v", jobParts)
+	}
+}
+
 func TestTransitionEndpoint(t *testing.T) {
 	api := newTestAPI(t)
 	customer := api.createCustomer("Harbor Coffee")
