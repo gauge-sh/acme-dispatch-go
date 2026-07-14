@@ -260,6 +260,39 @@ func TestAdminGatingInBrowser(t *testing.T) {
 	mustContain(t, body, "New user")
 }
 
+func TestWebRefusesSelfDeletionOutright(t *testing.T) {
+	app := newTestApp(t)
+	app.login("admin@test.example", "admin-password")
+
+	// A second admin exists, so the API-side last-active-admin guard would
+	// not stop this delete — the web UI refuses it anyway because it is a
+	// self-delete.
+	second := core.User{Email: "second-admin@test.example", Name: "Second Admin", Role: core.RoleAdmin, IsActive: true}
+	if err := app.store.CreateUser(&second, "second-password"); err != nil {
+		t.Fatal(err)
+	}
+
+	admin, err := app.store.UserByEmail("admin@test.example")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, body := app.postAndRead("/users/"+strconv.FormatInt(admin.ID, 10)+"/delete", url.Values{})
+	mustContain(t, body, "you cannot delete your own account")
+	if resp.Request.URL.Path != "/users/"+strconv.FormatInt(admin.ID, 10) {
+		t.Fatalf("landed on %s", resp.Request.URL.Path)
+	}
+	if _, err := app.store.UserByID(admin.ID); err != nil {
+		t.Fatal("self-delete went through despite the refusal")
+	}
+
+	// Deleting someone else still works normally.
+	resp, body = app.postAndRead("/users/"+strconv.FormatInt(second.ID, 10)+"/delete", url.Values{})
+	mustContain(t, body, "User deleted.")
+	if _, err := app.store.UserByID(second.ID); err == nil {
+		t.Fatal("other user was not deleted")
+	}
+}
+
 func TestTokenShownExactlyOnce(t *testing.T) {
 	app := newTestApp(t)
 	app.login("admin@test.example", "admin-password")

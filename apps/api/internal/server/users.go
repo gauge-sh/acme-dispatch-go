@@ -15,13 +15,15 @@ type userPayload struct {
 	Password Opt[string]    `json:"password"`
 }
 
+// checkNulls rejects an explicit null on every required field except
+// password: password is not nullable, and a null there is ignored rather
+// than treated as an error or a clear.
 func (p userPayload) checkNulls() error {
 	fields := map[string]string{}
 	nullOn(fields, "email", p.Email.Set, p.Email.Null)
 	nullOn(fields, "name", p.Name.Set, p.Name.Null)
 	nullOn(fields, "role", p.Role.Set, p.Role.Null)
 	nullOn(fields, "is_active", p.IsActive.Set, p.IsActive.Null)
-	nullOn(fields, "password", p.Password.Set, p.Password.Null)
 	return fieldError(fields)
 }
 

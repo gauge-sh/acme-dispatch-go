@@ -155,10 +155,18 @@ func (a *App) userUpdate(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, fmt.Sprintf("/users/%d", id), http.StatusSeeOther)
 }
 
+// userDelete refuses self-deletion outright, unlike the API, which allows it
+// unless you are the last active admin. The web UI is where someone would
+// click their own delete button by accident, so it closes the door entirely.
 func (a *App) userDelete(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r)
 	if !ok {
 		http.NotFound(w, r)
+		return
+	}
+	if actor := currentUser(r); actor != nil && actor.ID == id {
+		a.setFlash(w, r, "you cannot delete your own account")
+		http.Redirect(w, r, fmt.Sprintf("/users/%d", id), http.StatusSeeOther)
 		return
 	}
 	if err := a.store.DeleteUser(id); err != nil {

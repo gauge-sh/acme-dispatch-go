@@ -120,6 +120,16 @@ func TestUserPasswordChangeOverAPI(t *testing.T) {
 	if u, _ := api.store.Authenticate("rotate@test.example", "first-password"); u != nil {
 		t.Fatal("old password still works")
 	}
+
+	// null on PATCH is ignored, not a clear and not an error: the password
+	// is not a nullable field.
+	rec = api.do("PATCH", jsonPath("/api/v1/users/%v", created["id"]), api.admin, map[string]any{
+		"password": nil, "name": "Rotate Me Still",
+	})
+	api.mustStatus(rec, http.StatusOK)
+	if u, _ := api.store.Authenticate("rotate@test.example", "second-password"); u == nil {
+		t.Fatal("null password wiped the real one")
+	}
 }
 
 func TestTechnicianCombinedFilters(t *testing.T) {
